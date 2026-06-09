@@ -1,0 +1,15 @@
+{
+  "name": "fullbpo",
+  "owner": {
+    "name": "FullBPO",
+    "email": "pedro.magnago@fullbpo.com"
+  },
+  "plugins": [
+    {
+      "name": "fullbpo",
+      "displayName": "FullBPO — Backoffice Contábil-Financeiro",
+      "source": "./plugins/fullbpo",
+      "description": "58 agentes especialistas em contabilidade, fiscal, folha e controladoria brasileira + comandos de rotina D/S/M + skills do método e voz da marca FullBPO. Tudo em pt-BR."
+    }
+  ]
+}
