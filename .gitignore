@@ -2,3 +2,11 @@
 **/.DS_Store
 *.log
 .env
+
+# Python (MCP slim package roda via `uv run --script`, sem build local)
+__pycache__/
+*.pyc
+
+# Identidade/sessão do operador nunca entram no repo (vivem em ~/.fullbpo)
+credenciais.env
+.finops_session.json

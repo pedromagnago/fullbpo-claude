@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fullbpo-omie": {
+      "command": "uv",
+      "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp/omie_mcp.py"]
+    }
+  }
+}
