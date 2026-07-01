@@ -9,7 +9,7 @@
       "name": "fullbpo",
       "displayName": "FullBPO — Backoffice Contábil-Financeiro",
       "source": "./plugins/fullbpo",
-      "description": "58 agentes especialistas em contabilidade, fiscal, folha e controladoria brasileira + comandos de rotina D/S/M + skills do método e voz da marca FullBPO. Tudo em pt-BR."
+      "description": "58 agentes especialistas em contabilidade, fiscal, folha e controladoria brasileira + comandos de rotina D/S/M + skills do método e voz da marca FullBPO + MCP Omie/FinOps (só-leitura) direto no chat. Tudo em pt-BR."
     }
   ]
 }
