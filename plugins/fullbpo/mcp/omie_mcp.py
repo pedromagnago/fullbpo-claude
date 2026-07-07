@@ -2,16 +2,22 @@
 # requires-python = ">=3.10"
 # dependencies = ["mcp>=1.2.0", "httpx>=0.28", "python-dotenv>=1.0"]
 # ///
-"""Servidor MCP slim do plugin FullBPO — só Omie/FinOps (só-leitura).
+"""Servidor MCP slim do plugin FullBPO — Omie/FinOps (leitura + escrita).
 
-Empacota, DENTRO do plugin distribuível, as 9 tools que hoje vivem no servidor
+Empacota, DENTRO do plugin distribuível, as tools que hoje vivem no servidor
 completo local do Pedro. Sobe com `uv run --script` (venv efêmero, Python ≥3.10
 resolvido sozinho); o dir deste script entra no sys.path[0], então os imports
-são flat: config / finops_client / omie são os arquivos irmãos aqui em mcp/.
+são flat: config / finops_client / omie / omie_write são os irmãos aqui em mcp/.
 
   config         → descobre a pasta FullBPO-MCP no Drive + identidade local
   finops_client  → login do operador (JWT), refresh, bridge p/ a Edge Function
   omie           → atalhos finos das tools omie_* (só-leitura)
+  omie_write     → atalhos das tools de ESCRITA (dry_run=True por padrão)
+
+ESCRITA: toda tool de escrita nasce com dry_run=True — sem dry_run=False
+explícito, o servidor só devolve o PREVIEW (nada toca a Omie). O fluxo é sempre
+previsualize → operador confere → reenvia com dry_run=False. As travas de fato
+moram no servidor (gate de admin + anti-eco/idempotência), não neste plugin.
 
 Segredos: nenhum vive aqui. URL + anon (publicável) + mapa nome→UUID vêm da
 pasta compartilhada no Drive; e-mail/senha/sessão são locais por máquina.
@@ -27,6 +33,7 @@ from mcp.server.fastmcp import FastMCP
 import config
 import finops_client
 import omie
+import omie_write
 
 mcp = FastMCP("fullbpo-omie")
 
@@ -119,6 +126,160 @@ def omie_sync_company(cliente: str, desde: str | None = None,
     """Espelha (sincroniza) os dados do Omie do cliente na base do FinOps. Use
     dry_run=True p/ simular antes. desde=yyyy-MM-dd recorta o período."""
     return omie.sync_company(cliente, desde=desde, dry_run=dry_run, full_sync=full_sync)
+
+
+# ─── Omie ESCRITA (via FinOps) — dry_run=True por PADRÃO ──────────────────────
+# Regra de ouro: NUNCA reenvie com dry_run=False sem o operador humano conferir o
+# preview. dry_run=True devolve só {idempotency_key, endpoint, param} — nada vai
+# pra Omie. As travas reais (gate de admin + anti-eco) estão no servidor FinOps.
+@mcp.tool()
+def omie_incluir_conta_pagar(cliente: str, codigo_cliente_fornecedor: int,
+                             valor_documento: float, data_vencimento: str,
+                             codigo_categoria: str, id_conta_corrente: int,
+                             data_previsao: str | None = None, data_emissao: str | None = None,
+                             numero_documento: str | None = None, numero_parcela: str | None = None,
+                             observacao: str | None = None, finops_id: str | None = None,
+                             dry_run: bool = True) -> dict:
+    """Inclui uma conta a PAGAR (título AP) no Omie do cliente. cliente = nome ou
+    company_id. codigo_cliente_fornecedor = código Omie do fornecedor; codigo_categoria
+    = código do plano de categorias; id_conta_corrente = código da conta corrente.
+    Datas yyyy-MM-dd. dry_run=True (PADRÃO) só devolve preview — NADA vai pra Omie;
+    confira com o operador e só então reenvie com dry_run=False."""
+    return omie_write.incluir_conta_pagar(
+        cliente, codigo_cliente_fornecedor=codigo_cliente_fornecedor,
+        valor_documento=valor_documento, data_vencimento=data_vencimento,
+        codigo_categoria=codigo_categoria, id_conta_corrente=id_conta_corrente,
+        data_previsao=data_previsao, data_emissao=data_emissao,
+        numero_documento=numero_documento, numero_parcela=numero_parcela,
+        observacao=observacao, finops_id=finops_id, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_alterar_conta_pagar(cliente: str, codigo_lancamento_omie: int,
+                             valor_documento: float | None = None, data_vencimento: str | None = None,
+                             data_previsao: str | None = None, codigo_categoria: str | None = None,
+                             codigo_cliente_fornecedor: int | None = None,
+                             id_conta_corrente: int | None = None, numero_documento: str | None = None,
+                             observacao: str | None = None, dry_run: bool = True) -> dict:
+    """Altera uma conta a PAGAR existente (por codigo_lancamento_omie). Passe só os
+    campos que mudam (ao menos 1). dry_run=True (PADRÃO) só devolve preview — NADA
+    vai pra Omie; confira com o operador e só então reenvie com dry_run=False."""
+    return omie_write.alterar_conta_pagar(
+        cliente, codigo_lancamento_omie=codigo_lancamento_omie,
+        valor_documento=valor_documento, data_vencimento=data_vencimento,
+        data_previsao=data_previsao, codigo_categoria=codigo_categoria,
+        codigo_cliente_fornecedor=codigo_cliente_fornecedor,
+        id_conta_corrente=id_conta_corrente, numero_documento=numero_documento,
+        observacao=observacao, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_excluir_conta_pagar(cliente: str, codigo_lancamento_omie: int,
+                             dry_run: bool = True) -> dict:
+    """Exclui uma conta a PAGAR (por codigo_lancamento_omie). Irreversível na Omie.
+    dry_run=True (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o
+    operador e só então reenvie com dry_run=False."""
+    return omie_write.excluir_conta_pagar(
+        cliente, codigo_lancamento_omie=codigo_lancamento_omie, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_incluir_conta_receber(cliente: str, codigo_cliente_fornecedor: int,
+                               valor_documento: float, data_vencimento: str,
+                               codigo_categoria: str, id_conta_corrente: int,
+                               data_previsao: str | None = None, data_emissao: str | None = None,
+                               numero_documento: str | None = None, numero_parcela: str | None = None,
+                               observacao: str | None = None, finops_id: str | None = None,
+                               dry_run: bool = True) -> dict:
+    """Inclui uma conta a RECEBER (título AR) no Omie do cliente. codigo_cliente_fornecedor
+    = código Omie do cliente; codigo_categoria = código do plano de categorias;
+    id_conta_corrente = código da conta corrente. Datas yyyy-MM-dd. dry_run=True
+    (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o operador e só
+    então reenvie com dry_run=False."""
+    return omie_write.incluir_conta_receber(
+        cliente, codigo_cliente_fornecedor=codigo_cliente_fornecedor,
+        valor_documento=valor_documento, data_vencimento=data_vencimento,
+        codigo_categoria=codigo_categoria, id_conta_corrente=id_conta_corrente,
+        data_previsao=data_previsao, data_emissao=data_emissao,
+        numero_documento=numero_documento, numero_parcela=numero_parcela,
+        observacao=observacao, finops_id=finops_id, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_alterar_conta_receber(cliente: str, codigo_lancamento_omie: int,
+                               valor_documento: float | None = None, data_vencimento: str | None = None,
+                               data_previsao: str | None = None, codigo_categoria: str | None = None,
+                               codigo_cliente_fornecedor: int | None = None,
+                               id_conta_corrente: int | None = None, numero_documento: str | None = None,
+                               observacao: str | None = None, dry_run: bool = True) -> dict:
+    """Altera uma conta a RECEBER existente (por codigo_lancamento_omie). Passe só os
+    campos que mudam (ao menos 1). dry_run=True (PADRÃO) só devolve preview — NADA
+    vai pra Omie; confira com o operador e só então reenvie com dry_run=False."""
+    return omie_write.alterar_conta_receber(
+        cliente, codigo_lancamento_omie=codigo_lancamento_omie,
+        valor_documento=valor_documento, data_vencimento=data_vencimento,
+        data_previsao=data_previsao, codigo_categoria=codigo_categoria,
+        codigo_cliente_fornecedor=codigo_cliente_fornecedor,
+        id_conta_corrente=id_conta_corrente, numero_documento=numero_documento,
+        observacao=observacao, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_excluir_conta_receber(cliente: str, codigo_lancamento_omie: int,
+                               dry_run: bool = True) -> dict:
+    """Exclui uma conta a RECEBER (por codigo_lancamento_omie). Irreversível na Omie.
+    dry_run=True (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o
+    operador e só então reenvie com dry_run=False."""
+    return omie_write.excluir_conta_receber(
+        cliente, codigo_lancamento_omie=codigo_lancamento_omie, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_baixar_titulo(cliente: str, tipo: str, codigo_lancamento_omie: int,
+                       valor: float | None = None, data: str | None = None,
+                       id_conta_corrente: int | None = None, juros: float | None = None,
+                       desconto: float | None = None, multa: float | None = None,
+                       observacao: str | None = None, omie_endpoint: str | None = None,
+                       omie_call: str | None = None, dry_run: bool = True) -> dict:
+    """Baixa (liquida) um título no Omie. tipo = 'pagar' ou 'receber'. codigo_lancamento_omie
+    = código do título; data yyyy-MM-dd; id_conta_corrente = conta da baixa. dry_run=True
+    (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o operador e só então
+    reenvie com dry_run=False."""
+    return omie_write.baixar_titulo(
+        cliente, tipo=tipo, codigo_lancamento_omie=codigo_lancamento_omie,
+        valor=valor, data=data, id_conta_corrente=id_conta_corrente,
+        juros=juros, desconto=desconto, multa=multa, observacao=observacao,
+        omie_endpoint=omie_endpoint, omie_call=omie_call, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_incluir_cliente_fornecedor(cliente: str, razao_social: str, cnpj_cpf: str,
+                                    papel: str | None = None, nome_fantasia: str | None = None,
+                                    email: str | None = None, pessoa_fisica: str | None = None,
+                                    inativo: str | None = None, finops_id: str | None = None,
+                                    dry_run: bool = True) -> dict:
+    """Inclui (upsert) um cadastro de cliente/fornecedor no Omie. razao_social + cnpj_cpf
+    obrigatórios; papel = 'cliente'|'fornecedor'|'ambos'; pessoa_fisica = 'S'|'N'.
+    dry_run=True (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o
+    operador e só então reenvie com dry_run=False."""
+    return omie_write.incluir_cliente_fornecedor(
+        cliente, razao_social=razao_social, cnpj_cpf=cnpj_cpf, papel=papel,
+        nome_fantasia=nome_fantasia, email=email, pessoa_fisica=pessoa_fisica,
+        inativo=inativo, finops_id=finops_id, dry_run=dry_run)
+
+
+@mcp.tool()
+def omie_alterar_cliente_fornecedor(cliente: str, codigo_cliente_omie: int,
+                                    razao_social: str | None = None, nome_fantasia: str | None = None,
+                                    email: str | None = None, inativo: str | None = None,
+                                    dry_run: bool = True) -> dict:
+    """Altera um cadastro de cliente/fornecedor (por codigo_cliente_omie). Não há
+    exclusão de cadastro — para desativar, passe inativo='S'. dry_run=True (PADRÃO)
+    só devolve preview — NADA vai pra Omie; confira com o operador e só então reenvie
+    com dry_run=False."""
+    return omie_write.alterar_cliente_fornecedor(
+        cliente, codigo_cliente_omie=codigo_cliente_omie, razao_social=razao_social,
+        nome_fantasia=nome_fantasia, email=email, inativo=inativo, dry_run=dry_run)
 
 
 def _selftest() -> int:
