@@ -58,7 +58,11 @@ def alterar_conta_pagar(cliente: str, codigo_lancamento_omie: int,
                         data_previsao: str | None = None, codigo_categoria: str | None = None,
                         codigo_cliente_fornecedor: int | None = None,
                         id_conta_corrente: int | None = None, numero_documento: str | None = None,
-                        observacao: str | None = None, dry_run: bool = True) -> dict:
+                        observacao: str | None = None, codigo_tipo_documento: str | None = None,
+                        omie_param_extra: dict | None = None, dry_run: bool = True) -> dict:
+    extra = dict(omie_param_extra or {})
+    if codigo_tipo_documento is not None:
+        extra.setdefault("codigo_tipo_documento", codigo_tipo_documento)
     return _fc.call_tool("omie_alterar_conta_pagar", _limpar({
         "company_id": _cid(cliente),
         "codigo_lancamento_omie": codigo_lancamento_omie,
@@ -70,6 +74,7 @@ def alterar_conta_pagar(cliente: str, codigo_lancamento_omie: int,
         "id_conta_corrente": id_conta_corrente,
         "numero_documento": numero_documento,
         "observacao": observacao,
+        "omie_param_extra": extra or None,
         "dry_run": dry_run,
     }))
 
@@ -113,7 +118,11 @@ def alterar_conta_receber(cliente: str, codigo_lancamento_omie: int,
                           data_previsao: str | None = None, codigo_categoria: str | None = None,
                           codigo_cliente_fornecedor: int | None = None,
                           id_conta_corrente: int | None = None, numero_documento: str | None = None,
-                          observacao: str | None = None, dry_run: bool = True) -> dict:
+                          observacao: str | None = None, codigo_tipo_documento: str | None = None,
+                          omie_param_extra: dict | None = None, dry_run: bool = True) -> dict:
+    extra = dict(omie_param_extra or {})
+    if codigo_tipo_documento is not None:
+        extra.setdefault("codigo_tipo_documento", codigo_tipo_documento)
     return _fc.call_tool("omie_alterar_conta_receber", _limpar({
         "company_id": _cid(cliente),
         "codigo_lancamento_omie": codigo_lancamento_omie,
@@ -125,6 +134,7 @@ def alterar_conta_receber(cliente: str, codigo_lancamento_omie: int,
         "id_conta_corrente": id_conta_corrente,
         "numero_documento": numero_documento,
         "observacao": observacao,
+        "omie_param_extra": extra or None,
         "dry_run": dry_run,
     }))
 

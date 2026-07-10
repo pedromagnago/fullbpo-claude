@@ -160,17 +160,22 @@ def omie_alterar_conta_pagar(cliente: str, codigo_lancamento_omie: int,
                              data_previsao: str | None = None, codigo_categoria: str | None = None,
                              codigo_cliente_fornecedor: int | None = None,
                              id_conta_corrente: int | None = None, numero_documento: str | None = None,
-                             observacao: str | None = None, dry_run: bool = True) -> dict:
+                             observacao: str | None = None, codigo_tipo_documento: str | None = None,
+                             omie_param_extra: dict | None = None, dry_run: bool = True) -> dict:
     """Altera uma conta a PAGAR existente (por codigo_lancamento_omie). Passe só os
-    campos que mudam (ao menos 1). dry_run=True (PADRÃO) só devolve preview — NADA
-    vai pra Omie; confira com o operador e só então reenvie com dry_run=False."""
+    campos que mudam (ao menos 1). codigo_tipo_documento troca o tipo do título
+    (ex.: "BOL"→"TID"). omie_param_extra é passthrough pra qualquer outro campo nativo
+    do Omie (AlterarContaPagar) não listado aqui. dry_run=True (PADRÃO) só devolve
+    preview — NADA vai pra Omie; confira com o operador e só então reenvie com
+    dry_run=False."""
     return omie_write.alterar_conta_pagar(
         cliente, codigo_lancamento_omie=codigo_lancamento_omie,
         valor_documento=valor_documento, data_vencimento=data_vencimento,
         data_previsao=data_previsao, codigo_categoria=codigo_categoria,
         codigo_cliente_fornecedor=codigo_cliente_fornecedor,
         id_conta_corrente=id_conta_corrente, numero_documento=numero_documento,
-        observacao=observacao, dry_run=dry_run)
+        observacao=observacao, codigo_tipo_documento=codigo_tipo_documento,
+        omie_param_extra=omie_param_extra, dry_run=dry_run)
 
 
 @mcp.tool()
@@ -211,17 +216,22 @@ def omie_alterar_conta_receber(cliente: str, codigo_lancamento_omie: int,
                                data_previsao: str | None = None, codigo_categoria: str | None = None,
                                codigo_cliente_fornecedor: int | None = None,
                                id_conta_corrente: int | None = None, numero_documento: str | None = None,
-                               observacao: str | None = None, dry_run: bool = True) -> dict:
+                               observacao: str | None = None, codigo_tipo_documento: str | None = None,
+                               omie_param_extra: dict | None = None, dry_run: bool = True) -> dict:
     """Altera uma conta a RECEBER existente (por codigo_lancamento_omie). Passe só os
-    campos que mudam (ao menos 1). dry_run=True (PADRÃO) só devolve preview — NADA
-    vai pra Omie; confira com o operador e só então reenvie com dry_run=False."""
+    campos que mudam (ao menos 1). codigo_tipo_documento troca o tipo do título
+    (ex.: "BOL"→"TID" — boleto → título descontado). omie_param_extra é passthrough
+    pra qualquer outro campo nativo do Omie (AlterarContaReceber) não listado aqui.
+    dry_run=True (PADRÃO) só devolve preview — NADA vai pra Omie; confira com o
+    operador e só então reenvie com dry_run=False."""
     return omie_write.alterar_conta_receber(
         cliente, codigo_lancamento_omie=codigo_lancamento_omie,
         valor_documento=valor_documento, data_vencimento=data_vencimento,
         data_previsao=data_previsao, codigo_categoria=codigo_categoria,
         codigo_cliente_fornecedor=codigo_cliente_fornecedor,
         id_conta_corrente=id_conta_corrente, numero_documento=numero_documento,
-        observacao=observacao, dry_run=dry_run)
+        observacao=observacao, codigo_tipo_documento=codigo_tipo_documento,
+        omie_param_extra=omie_param_extra, dry_run=dry_run)
 
 
 @mcp.tool()
