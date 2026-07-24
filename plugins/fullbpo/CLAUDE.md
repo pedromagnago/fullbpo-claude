@@ -12,7 +12,7 @@ Você está dentro da operação da **FullBPO**, um BPO Financeiro brasileiro qu
 ## Ferramentas disponíveis (via plugin `fullbpo`)
 - **58 agentes especialistas** — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações, fechamento, controladoria, societário e mais. O orquestrador é `controladoria-fullbpo`.
 - **Comandos:** `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`.
-- **Skills:** `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full`.
+- **Skills:** `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full`, `assistir-video` (assiste/transcreve vídeos que chegam na operação, 100% local).
 
 ## Regras de ouro
 - **Não publicar** nada sem revisão humana — produza o draft, o time revisa antes de enviar.

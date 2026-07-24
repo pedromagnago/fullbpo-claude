@@ -6,7 +6,7 @@ Pacote oficial de agentes, comandos e skills da **FullBPO** para Claude Code. In
 
 - **58 agentes especialistas** (pt-BR) — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED, ECF/ECD, DCTFWeb, Reinf), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações (banco, cartão, fornecedores, clientes), fechamento mensal, DRE gerencial, fluxo de caixa, controladoria, societário (abertura, alteração, baixa), malha fina, due diligence, valuation e mais. Orquestrador: `controladoria-fullbpo`.
 - **9 comandos de rotina** — `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`.
-- **3 skills de método** — `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full`.
+- **4 skills** — método (`metodo-fullbpo`), voz da marca (`voz-da-marca`), nomenclatura (`nomenclatura-full`) e `assistir-video` (assiste/transcreve vídeos — Reel, YouTube, WhatsApp — que chegam na operação, 100% local).
 - **CLAUDE.md modelo** — contexto operacional para copiar na pasta de trabalho.
 
 ## Instalação (time)
@@ -49,7 +49,7 @@ fullbpo-claude/
     ├── .claude-plugin/plugin.json       → metadata e versão do plugin
     ├── agents/                          → 58 agentes (.md)
     ├── commands/                        → comandos de rotina (.md)
-    ├── skills/                          → skills de método
+    ├── skills/                          → skills (método + utilitárias)
     └── CLAUDE.md                        → contexto modelo
 ```
 
