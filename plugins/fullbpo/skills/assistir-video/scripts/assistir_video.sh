@@ -5,12 +5,16 @@
 # "assistir" o vídeo (ler o que é falado + enxergar o que aparece na tela).
 #
 # Uso:
-#   assistir_video.sh <URL> [pasta_saida] [num_frames]
+#   assistir_video.sh <URL> [pasta_saida] [max_frames]
 #
 # Saída: imprime um bloco "===== MANIFESTO =====" no final com os caminhos
-# absolutos dos arquivos que o Claude deve LER (transcrição, dados e frames).
+# absolutos dos arquivos que o Claude deve LER: dados, transcrição (com
+# timestamps), frames distintos (frame a frame) e contact sheets.
 #
 # Variáveis de ambiente opcionais:
+#   FPS             amostragem por segundo antes do dedup (padrão: 2)
+#   DEDUP           distância de Hamming p/ "tela nova" (padrão: 14; menor = + frames)
+#   MAX_FRAMES      teto de frames distintos (padrão: 80; = 3º argumento)
 #   WHISPER_MODEL   modelo do faster-whisper p/ fallback de áudio (padrão: base)
 #   COOKIES_FROM    navegador p/ cookies (ex: chrome) — só p/ vídeo que exige login
 # ---------------------------------------------------------------------------
@@ -18,17 +22,19 @@ set -uo pipefail
 
 URL="${1:-}"
 OUTDIR="${2:-}"
-NUM_FRAMES="${3:-6}"
+MAX_FRAMES="${3:-${MAX_FRAMES:-80}}"
+FPS="${FPS:-2}"
+DEDUP="${DEDUP:-14}"
 WHISPER_MODEL="${WHISPER_MODEL:-base}"
 
 if [[ -z "$URL" ]]; then
-  echo "ERRO: informe a URL do vídeo. Uso: assistir_video.sh <URL> [pasta_saida] [num_frames]" >&2
+  echo "ERRO: informe a URL do vídeo. Uso: assistir_video.sh <URL> [pasta_saida] [max_frames]" >&2
   exit 2
 fi
 if [[ -z "$OUTDIR" ]]; then
   OUTDIR="$(mktemp -d 2>/dev/null || echo /tmp/assistir-video-$$)"
 fi
-mkdir -p "$OUTDIR/frames"
+mkdir -p "$OUTDIR/frames" "$OUTDIR/sheets"
 cd "$OUTDIR" || { echo "ERRO: não consegui usar a pasta $OUTDIR" >&2; exit 2; }
 
 log(){ echo ">> $*" >&2; }
@@ -85,18 +91,24 @@ TRANSC="transcricao.txt"
 TRANSC_FONTE=""
 
 if [[ -n "$SUB" ]]; then
-  log "Convertendo legenda ($SUB) em texto..."
+  log "Convertendo legenda ($SUB) em texto (com timestamps)..."
   python3 - "$SUB" <<'PY'
 import sys, re
-linhas, ult = [], None
+def secs(ts):
+    p = ts.replace(",", ".").split(":")
+    return round(int(p[0])*3600 + int(p[1])*60 + float(p[2]), 1)
+out, last, cur = [], None, None
 for ln in open(sys.argv[1], encoding="utf-8", errors="ignore"):
-    ln = ln.strip()
-    if not ln or ln == "WEBVTT" or "-->" in ln or ln.isdigit(): continue
-    if ln.startswith(("Kind:","Language:","NOTE")): continue
-    ln = re.sub(r"<[^>]+>", "", ln)          # tira tags <c> etc.
-    if ln and ln != ult:                     # dedup linhas repetidas seguidas
-        linhas.append(ln); ult = ln
-open("transcricao.txt","w",encoding="utf-8").write("\n".join(linhas)+"\n")
+    ln = ln.rstrip("\n")
+    m = re.match(r"\s*(\d\d:\d\d:\d\d[.,]\d+)\s*-->", ln)
+    if m: cur = secs(m.group(1)); continue
+    t = ln.strip()
+    if not t or t == "WEBVTT" or t.isdigit(): continue
+    if t.startswith(("Kind:", "Language:", "NOTE")): continue
+    t = re.sub(r"<[^>]+>", "", t)             # tira tags <c> etc.
+    if t and t != last:                       # dedup linhas repetidas seguidas
+        out.append(f"[{cur:6.1f}s] {t}" if cur is not None else t); last = t
+open("transcricao.txt","w",encoding="utf-8").write("\n".join(out)+"\n")
 PY
   TRANSC_FONTE="legenda automática da plataforma ($SUB)"
 elif [[ -n "$CLIP" ]]; then
@@ -119,20 +131,54 @@ else
 fi
 [[ -f "$TRANSC" ]] || TRANSC=""
 
-# --- 6. frames uniformemente espaçados --------------------------------------
+# --- 6. frame a frame: amostra densa + dedup por conteúdo -------------------
+# Amostra em FPS, calcula um perceptual hash (dhash) por quadro e mantém só
+# quando a TELA muda de verdade — ignora tremor de câmera e a mão do criador,
+# que enganam o dedup por pixel. Preserva o timestamp de cada frame e gera
+# contact sheets (grades) p/ revisão econômica de muitos frames de uma vez.
 FRAMES_OK=0
 if [[ -n "$CLIP" ]]; then
-  DUR="$(python3 -c "import json,glob;d=json.load(open(glob.glob('video.info.json')[0]));print(int(d.get('duration') or 0))" 2>/dev/null || echo 0)"
-  [[ "$DUR" -lt 1 ]] && DUR=30
-  N="$NUM_FRAMES"; [[ "$N" -lt 1 ]] && N=1
-  log "Extraindo $N frames de um vídeo de ${DUR}s..."
-  for ((i=0; i<N; i++)); do
-    T="$(python3 -c "print(round($DUR*($i+0.5)/$N,1))")"
-    IDX="$(printf '%02d' $((i+1)))"
-    if "$FF" -ss "$T" -i "$CLIP" -frames:v 1 -q:v 3 -y "frames/frame_${IDX}.jpg" >/dev/null 2>&1; then
+  log "Analisando frame a frame (fps=$FPS, dedup=$DEDUP, teto=$MAX_FRAMES)..."
+  "$FF" -i "$CLIP" -vf "fps=${FPS},scale=9:8,format=gray" -f rawvideo "hashes.gray" 2>/dev/null
+  # decide os timestamps das telas distintas (numpy; sem dependência de Pillow)
+  python3 - "$FPS" "$DEDUP" "$MAX_FRAMES" > "kept.txt" <<'PY'
+import sys, numpy as np
+fps = float(sys.argv[1]); th = int(sys.argv[2]); mx = int(sys.argv[3])
+d = np.fromfile("hashes.gray", dtype=np.uint8); n = d.size // 72
+if n == 0: sys.exit(0)
+fr = d[:n*72].reshape(n, 8, 9).astype(np.int16)
+def dh(f):
+    v = 0
+    for b in (f[:, :8] < f[:, 1:]).flatten(): v = (v << 1) | int(b)
+    return v
+H = [dh(fr[i]) for i in range(n)]
+ham = lambda a, b: bin(a ^ b).count("1")
+kept = [0]
+for i in range(1, n):
+    if ham(H[i], H[kept[-1]]) >= th: kept.append(i)
+if len(kept) > mx:                        # teto: rareia uniformemente e avisa
+    orig = len(kept); step = orig / mx
+    kept = [kept[int(k*step)] for k in range(mx)]
+    sys.stderr.write(f">> aviso: {orig} telas distintas rareadas p/ MAX_FRAMES={mx}\n")
+for i in kept: print(round(i/fps, 1))
+PY
+  # extrai cada frame distinto em resolução cheia, nomeado pelo timestamp
+  IDX=0
+  while read -r T; do
+    [[ -z "$T" ]] && continue
+    IDX=$((IDX+1))
+    NAME="frame_$(printf '%03d' "$IDX")_$(printf 't%06.1fs' "$T").jpg"
+    if "$FF" -ss "$T" -i "$CLIP" -frames:v 1 -q:v 3 -y "frames/$NAME" >/dev/null 2>&1; then
       FRAMES_OK=$((FRAMES_OK+1))
+      printf '%s\tt=%ss\n' "$NAME" "$T" >> "frames/index.txt"
     fi
-  done
+  done < "kept.txt"
+  # contact sheets 4x4 na ordem cronológica (leia primeiro p/ ter a visão geral)
+  if [[ "$FRAMES_OK" -gt 0 ]]; then
+    "$FF" -framerate 1 -pattern_type glob -i "frames/frame_*.jpg" \
+          -vf "scale=360:-1,tile=4x4:padding=6:color=white" -q:v 4 \
+          "sheets/contato_%02d.jpg" >/dev/null 2>&1 || true
+  fi
 fi
 
 # --- 7. MANIFESTO (o que o Claude deve LER) ---------------------------------
@@ -140,10 +186,13 @@ echo ""
 echo "===== MANIFESTO ====="
 echo "pasta: $OUTDIR"
 echo "fonte_transcricao: $TRANSC_FONTE"
-[[ -f "$OUTDIR/dados.txt" ]]        && echo "dados: $OUTDIR/dados.txt"
-[[ -n "$TRANSC" ]]                  && echo "transcricao: $OUTDIR/$TRANSC"
+[[ -f "$OUTDIR/dados.txt" ]] && echo "dados: $OUTDIR/dados.txt"
+[[ -n "$TRANSC" ]]           && echo "transcricao: $OUTDIR/$TRANSC  (com timestamps)"
 if [[ "$FRAMES_OK" -gt 0 ]]; then
-  echo "frames ($FRAMES_OK):"
-  for f in "$OUTDIR"/frames/frame_*.jpg; do [[ -e "$f" ]] && echo "  $f"; done
+  echo "frames_distintos: $FRAMES_OK"
+  echo "index: $OUTDIR/frames/index.txt  (frame -> timestamp, em ordem)"
+  echo "frames_dir: $OUTDIR/frames/  (leia frames individuais p/ detalhe: números, textos)"
+  echo "contact_sheets (LEIA PRIMEIRO — ordem cronológica):"
+  for s in "$OUTDIR"/sheets/contato_*.jpg; do [[ -e "$s" ]] && echo "  $s"; done
 fi
 echo "===== FIM ====="
