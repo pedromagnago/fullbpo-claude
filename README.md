@@ -5,7 +5,7 @@ Pacote oficial de agentes, comandos e skills da **FullBPO** para Claude Code. In
 ## O que vem dentro
 
 - **58 agentes especialistas** (pt-BR) — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED, ECF/ECD, DCTFWeb, Reinf), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações (banco, cartão, fornecedores, clientes), fechamento mensal, DRE gerencial, fluxo de caixa, controladoria, societário (abertura, alteração, baixa), malha fina, due diligence, valuation e mais. Orquestrador: `controladoria-fullbpo`.
-- **9 comandos de rotina** — `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`.
+- **10 comandos de rotina** — `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup` e `/avaliar` (avaliação completa de um creator de TikTok: perfil + vídeo + produtos → relatório).
 - **7 skills** — `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full` (método), `assistir-video` (transcreve e analisa vídeo de referência **frame a frame** a partir do link — TikTok, Reels, YouTube, Shorts), `estudo-de-video` (gera um **relatório HTML** de estudo de vídeo + perfil como entrega ao cliente), `painel-vendas` (monta o **dashboard de vendas** de TikTok Shop — GMV, comissão, Pareto, fornecedores, apostas — em HTML com gráficos SVG) e `coleta-apify` (puxa perfil/vídeos e produtos do TikTok Shop via **Apify** para os modelos normalizados).
 - **CLAUDE.md modelo** — contexto operacional para copiar na pasta de trabalho.
 

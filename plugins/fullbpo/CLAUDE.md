@@ -11,7 +11,7 @@ Você está dentro da operação da **FullBPO**, um BPO Financeiro brasileiro qu
 
 ## Ferramentas disponíveis (via plugin `fullbpo`)
 - **58 agentes especialistas** — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações, fechamento, controladoria, societário e mais. O orquestrador é `controladoria-fullbpo`.
-- **Comandos:** `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`.
+- **Comandos:** `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`, `/avaliar` (avaliação de creator TikTok).
 - **Skills:** `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full`, `assistir-video` (transcreve/analisa vídeo de referência frame a frame), `estudo-de-video` (relatório HTML de estudo de vídeo + perfil para o cliente), `painel-vendas` (dashboard de vendas TikTok Shop em HTML) e `coleta-apify` (coleta perfil/produtos do TikTok via Apify).
 
 ## Regras de ouro

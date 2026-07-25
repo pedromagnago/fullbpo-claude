@@ -38,6 +38,15 @@ Gera `produtos.json` — lista normalizada: `produto, preco, vendas, receita, lo
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" autotest
 ```
 
+## Avaliação completa (orquestrador)
+
+Para rodar tudo de uma vez (perfil + vídeo + produtos → dossiê com `conteudo.json` pré-preenchido), use o comando **`/avaliar`** ou direto:
+```bash
+APIFY_TOKEN=... bash "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/avaliar.sh" \
+  "@handle" --video "<URL opcional>" --nicho "<termo opcional>"
+```
+`avaliar.sh` é **idempotente** (pula o que já coletou) e chama `montar_esqueleto.py`, que converte o `perfil_analise.json` num `conteudo.json` já preenchido com métricas/hashtags/top vídeos — sobra só o qualitativo (marcado como `TODO`) para o analista/Claude.
+
 ## Como se liga no resto
 
 - `perfil_analise.json` → você escreve a seção **perfil** do `conteudo.json` (skill `estudo-de-video`).

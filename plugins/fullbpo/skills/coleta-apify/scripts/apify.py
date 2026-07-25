@@ -106,14 +106,21 @@ def mapear_produtos(items):
     for it in items:
         nome = _first(it, "title", "productName", "name", "product_title")
         if not nome: continue
+        preco = _first(it, "currentPrice", "price", "salePrice", "priceValue", "minPrice")
+        vendas = _first(it, "soldCount", "sales", "salesCount", "sold", "orderCount")
+        receita = _first(it, "revenue", "gmv", "estimatedRevenue", "salesAmount")
+        if receita is None and isinstance(preco, (int, float)) and isinstance(vendas, (int, float)):
+            receita = round(preco * vendas, 2)            # estimativa: preço × vendas
         out.append({
             "produto": nome,
-            "preco":  _first(it, "price", "salePrice", "priceValue", "minPrice"),
-            "vendas": _first(it, "soldCount", "sales", "salesCount", "sold", "orderCount"),
-            "receita": _first(it, "revenue", "gmv", "estimatedRevenue", "salesAmount"),
-            "loja":   _first(it, "shopName", "sellerName", "shop", "seller", "storeName"),
+            "preco":  preco,
+            "moeda":  _first(it, "currency", "currencyCode", "currencySymbol") or "",
+            "vendas": vendas,
+            "vendas_texto": _first(it, "soldText"),
+            "receita_estimada": receita,
+            "loja":   _first(it, "sellerName", "shopName", "shop", "seller", "storeName"),
             "rating": _first(it, "rating", "score", "stars"),
-            "url":    _first(it, "url", "productUrl", "link", "productLink"),
+            "url":    _first(it, "productUrl", "url", "link", "productLink"),
         })
     return out
 
@@ -176,7 +183,9 @@ def main():
         return
     if cmd == "produtos":
         termo = sys.argv[2]; saida = sys.argv[3] if len(sys.argv) > 3 and not sys.argv[3].startswith("--") else "produtos.json"
-        inp = {"searchQueries": [termo], "maxItems": _arg_n(100)} if not termo.startswith("http") else {"startUrls": [{"url": termo}]}
+        # input no schema do trakk/tiktok-shop-search-scraper (padrão); outro actor -> ajuste as chaves
+        inp = {"keywords": [termo], "country_code": os.environ.get("APIFY_PAIS", "BR"),
+               "maxItems": _arg_n(50), "mode": "fast", "sortBy": os.environ.get("APIFY_SORT", "best_sellers")}
         items = run_actor(ACTOR_PRODUTOS, inp, _token())
         data = mapear_produtos(items)
         json.dump(data, open(saida, "w"), ensure_ascii=False, indent=2)
