@@ -79,6 +79,12 @@ Próximos passos (analista/Claude):
 $( [[ -s "$WORK/produtos.json" ]] && echo "  3. RADAR de produtos: usar produtos.json (ranking de virais do nicho)." )
   *  PAINEL de vendas EXATO do cliente: alimentar vendas.json com o export do
      Affiliate Center e rodar painel-vendas/scripts/montar_painel.py.
+
+Como compartilhar os HTMLs com as pessoas:
+  - Link (recomendado, abre no celular): suba o .html no Netlify Drop
+    (https://app.netlify.com/drop) — arrasta o arquivo e ganha uma URL na hora.
+    Ou peça ao Claude para publicar como Artifact e compartilhe o link.
+  - Arquivo: envie o .html por Drive/e-mail; a pessoa abre no navegador.
 EOF
 
 echo ""
