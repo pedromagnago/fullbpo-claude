@@ -61,8 +61,8 @@ def mapear_perfil(items):
     for v in vids:                                   # conta cada tag 1x por vídeo
         seen = set()
         for h in (v.get("hashtags") or []):
-            nm = ("#" + h["name"]) if isinstance(h, dict) and h.get("name") else str(h)
-            if nm and nm != "#": seen.add(nm.lower())
+            raw = h.get("name") if isinstance(h, dict) else h
+            if raw: seen.add(("#" + str(raw).lstrip("#")).lower())   # ignora nome vazio
         for m in re.findall(r"#\w+", v.get("text") or ""):
             seen.add(m.lower())
         for nm in seen:
