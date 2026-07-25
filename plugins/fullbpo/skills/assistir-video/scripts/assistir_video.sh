@@ -114,7 +114,7 @@ PY
 elif [[ -n "$CLIP" ]]; then
   log "Sem legenda — transcrevendo o áudio com faster-whisper (modelo: $WHISPER_MODEL)..."
   python3 -c "import faster_whisper" 2>/dev/null || pip install -q faster-whisper >&2
-  "$FF" -i "$CLIP" -ar 16000 -ac 1 -y audio.wav >/dev/null 2>&1
+  "$FF" -nostdin -i "$CLIP" -ar 16000 -ac 1 -y audio.wav >/dev/null 2>&1
   python3 - "$WHISPER_MODEL" <<'PY' >&2 2>&1 || log "aviso: transcrição por áudio falhou"
 import sys
 from faster_whisper import WhisperModel
@@ -139,7 +139,7 @@ fi
 FRAMES_OK=0
 if [[ -n "$CLIP" ]]; then
   log "Analisando frame a frame (fps=$FPS, dedup=$DEDUP, teto=$MAX_FRAMES)..."
-  "$FF" -i "$CLIP" -vf "fps=${FPS},scale=9:8,format=gray" -f rawvideo "hashes.gray" 2>/dev/null
+  "$FF" -nostdin -i "$CLIP" -vf "fps=${FPS},scale=9:8,format=gray" -f rawvideo "hashes.gray" 2>/dev/null
   # decide os timestamps das telas distintas (numpy; sem dependência de Pillow)
   python3 - "$FPS" "$DEDUP" "$MAX_FRAMES" > "kept.txt" <<'PY'
 import sys, numpy as np
@@ -163,21 +163,23 @@ if len(kept) > mx:                        # teto: rareia uniformemente e avisa
 for i in kept: print(round(i/fps, 1))
 PY
   # extrai cada frame distinto em resolução cheia, nomeado pelo timestamp
+  # -nostdin + </dev/null: impede o ffmpeg de consumir o kept.txt (stdin do loop)
+  # e embaralhar a leitura dos timestamps.
   IDX=0
   while read -r T; do
     [[ -z "$T" ]] && continue
     IDX=$((IDX+1))
     NAME="frame_$(printf '%03d' "$IDX")_$(printf 't%06.1fs' "$T").jpg"
-    if "$FF" -ss "$T" -i "$CLIP" -frames:v 1 -q:v 3 -y "frames/$NAME" >/dev/null 2>&1; then
+    if "$FF" -nostdin -ss "$T" -i "$CLIP" -frames:v 1 -q:v 3 -y "frames/$NAME" </dev/null >/dev/null 2>&1; then
       FRAMES_OK=$((FRAMES_OK+1))
       printf '%s\tt=%ss\n' "$NAME" "$T" >> "frames/index.txt"
     fi
   done < "kept.txt"
   # contact sheets 4x4 na ordem cronológica (leia primeiro p/ ter a visão geral)
   if [[ "$FRAMES_OK" -gt 0 ]]; then
-    "$FF" -framerate 1 -pattern_type glob -i "frames/frame_*.jpg" \
+    "$FF" -nostdin -framerate 1 -pattern_type glob -i "frames/frame_*.jpg" \
           -vf "scale=360:-1,tile=4x4:padding=6:color=white" -q:v 4 \
-          "sheets/contato_%02d.jpg" >/dev/null 2>&1 || true
+          "sheets/contato_%02d.jpg" </dev/null >/dev/null 2>&1 || true
   fi
 fi
 
