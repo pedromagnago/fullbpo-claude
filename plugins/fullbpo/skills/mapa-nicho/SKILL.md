@@ -32,6 +32,35 @@ Pedidos como "compara esses perfis do nicho", "mapa da concorrência de X", "que
 - **Entrada:** pasta com N `perfil_analise.json` (do `coletar_nicho.sh`) + opcional `produtos.json`.
 - **Saída:** `mapa.html` autocontido, tema claro/escuro, imprime em PDF.
 
+## Entregável principal: dash centrado no creator (`montar_shop.py`)
+
+O `montar_mapa.py` acima compara N perfis de forma simétrica. Mas o entregável do cliente é **centrado em 1 creator-alvo** (ex.: a cliente) — os concorrentes e o nicho entram como munição. Use `montar_shop.py`:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/mapa-nicho/scripts/montar_shop.py" "<shop.json>" "<saida.html>"
+```
+
+Ele monta um dash que responde, **para a cliente**: onde ela está · **como a concorrência viraliza** · **quais vídeos do nicho viralizaram** · **quais produtos vendem bem e ela pode adotar** · recomendações. Você escreve o `shop.json` juntando: o perfil dela, os concorrentes (`perfil_analise.json`), os virais (`achar_virais.py` da Frente 2) e os produtos (`coleta-apify produtos`).
+
+Esquema do `shop.json`:
+```json
+{
+  "cliente": "Nome — Divisão Shop", "data": "DD/MM/AAAA",
+  "subject": {"handle":"…","nome":"…","seguidores":0,"mediana":0,"engajamento":0,"cadencia":0,"melhor":0,"duracao":0,
+              "viral": {"titulo":"…","views":0,"multiplo":0,"url":"…"}},
+  "resumo": ["…"],
+  "concorrentes": [{"handle":"…","nome":"…","seguidores":0,"mediana":0,"engajamento":0,"melhor":0,"como_viraliza":"…"}],
+  "virais_nicho": [{"handle":"…","multiplo":0,"views":0,"titulo":"…","url":"…"}],
+  "padrao_virais": "o que os virais têm em comum…",
+  "produtos_nicho": [{"produto":"…","vendas":0,"preco":"…","moeda":"USD","loja":"…"}],
+  "produtos_nota": "fonte + caveat de região (BR vs global)…",
+  "recomendacoes": [{"titulo":"…","texto":"…"}]
+}
+```
+Texto aceita `**negrito**` e `*itálico*`.
+
+> Nota de dados: o actor de produtos padrão retorna **mercado global (USD)** mesmo com `country_code=BR` — trate os produtos como sinal de categoria e valide fornecedor/disponibilidade BR (deixe claro no `produtos_nota`).
+
 ## A aprofundar (roadmap)
 
 - Cruzar `produtos.json` × perfis: quem vende o quê, sobreposição de catálogo, campeões e gaps do nicho.
