@@ -46,12 +46,17 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" autotest
 
 ## Descoberta de nicho (referências — sem hashtag/@)
 
-Acha as **referências do nicho** ancorando no **produto do vídeo viral** (que o Claude extrai do texto/transcrição do vídeo), sem hashtag genérica nem lista manual de @:
-```bash
-APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" \
-  descobrir "<produto do viral>" referencias.json --min-seg 500 --max-seg 300000 --excluir "@cliente"
-```
-Busca o produto → agrega os autores dos vídeos → filtra **idioma (pt)** + **faixa de seguidores** + tira a própria cliente → ranqueia por relevância/alcance. Saída `referencias.json` (handles) alimenta o `coletar_nicho.sh`. Dica: a busca do TikTok varia a cada run — rode com **termos variados do mesmo produto** pra ampliar a cobertura, e o Claude cura a lista final.
+Acha as referências do nicho por busca + filtro, sem hashtag genérica nem @ manual. **Duas formas, conforme o objetivo:**
+
+- **Referências (recomendado):** termos de **CATEGORIA** (vários, separados por vírgula) + **piso de seguidores alto** → creators **estabelecidos**. Quem recorre em vários termos = mais central no nicho.
+  ```bash
+  APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" \
+    descobrir "maquiagem,pincel de maquiagem,resenha de maquiagem" referencias.json \
+    --min-seg 20000 --max-seg 5000000 --excluir "@cliente"
+  ```
+- **Concorrência direta:** o **produto específico do viral** → quem vende o mesmo item (pares, geralmente menores).
+
+Fluxo interno: busca cada termo → agrega os autores → filtra **idioma (pt)** + **faixa de seguidores** + tira a cliente → ranqueia por **recorrência** (nº de termos) e alcance. Saída `referencias.json` → alimenta o `coletar_nicho.sh`. A busca do TikTok varia a cada run; o Claude cura a lista final. Ajuste a "altura" da referência com `--min-seg`/`--max-seg`.
 
 ## Avaliação completa (orquestrador)
 

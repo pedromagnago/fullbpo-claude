@@ -7,8 +7,9 @@
 # Uso:
 #   APIFY_TOKEN=... python3 apify.py perfil <@handle|url> [saida.json] [--n 30]
 #   APIFY_TOKEN=... python3 apify.py produtos "<palavra|url>" [saida.json] [--n 100] [--top 20]
-#   APIFY_TOKEN=... python3 apify.py descobrir "<produto/termo>" [saida.json] \
-#       [--n 20] [--lang pt] [--min-seg 500] [--max-seg 200000] [--excluir @handle]
+#   APIFY_TOKEN=... python3 apify.py descobrir "<categoria1,categoria2,...>" [saida.json] \
+#       [--n 20] [--lang pt] [--min-seg 20000] [--max-seg 2000000] [--excluir @handle]
+#       (use termos de CATEGORIA p/ achar referências; --min-seg alto p/ estabelecidos)
 #   python3 apify.py autotest        # testa os mapeadores em amostra (sem token/rede)
 #
 # Actors (sobrescreva por env se quiser outro):
@@ -280,16 +281,22 @@ def main():
     if cmd == "descobrir":
         termo = sys.argv[2]
         saida = sys.argv[3] if len(sys.argv) > 3 and not sys.argv[3].startswith("--") else "referencias.json"
-        inp = {"searchQueries": [termo], "resultsPerPage": _arg_n(20),
-               "shouldDownloadVideos": False, "shouldDownloadCovers": False}
-        items = run_actor(ACTOR_PERFIL, inp, _token())
+        # aceita VÁRIOS termos de categoria (separados por vírgula) e agrega:
+        # quem recorre em várias buscas = mais central no nicho (= referência).
+        termos = [t.strip() for t in termo.split(",") if t.strip()]
+        n = _arg_n(20); items = []
+        for t in termos:
+            inp = {"searchQueries": [t], "resultsPerPage": n,
+                   "shouldDownloadVideos": False, "shouldDownloadCovers": False}
+            try: items += run_actor(ACTOR_PERFIL, inp, _token())
+            except SystemExit as e: print(f">> aviso: busca '{t}' falhou: {e}", file=sys.stderr)
         lang = _opt_str("--lang") or os.environ.get("APIFY_LANG", "pt")
         refs = mapear_busca_criadores(items, lang=lang, min_seg=_opt_int("--min-seg") or 0,
                                       max_seg=_opt_int("--max-seg"), excluir=_opt_str("--excluir"))
         json.dump(refs, open(saida, "w"), ensure_ascii=False, indent=2)
-        print(f"referências: {saida} — {len(refs)} creators ({lang}) de {len(items)} vídeos p/ \"{termo}\"")
+        print(f"referências: {saida} — {len(refs)} creators ({lang}) de {len(items)} vídeos em {len(termos)} termo(s)")
         for r in refs[:20]:
-            print(f"  @{r['handle']:<22} {r['seguidores']:>8,} seg | {r['videos']}v | {r['exemplo'][:38]}".replace(",", "."))
+            print(f"  @{r['handle']:<22} {r['seguidores']:>9,} seg | {r['videos']}x | {r['exemplo'][:36]}".replace(",", "."))
         return
     print(__doc__); sys.exit(2)
 
