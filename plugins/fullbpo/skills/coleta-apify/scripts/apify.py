@@ -7,6 +7,8 @@
 # Uso:
 #   APIFY_TOKEN=... python3 apify.py perfil <@handle|url> [saida.json] [--n 30]
 #   APIFY_TOKEN=... python3 apify.py produtos "<palavra|url>" [saida.json] [--n 100] [--top 20]
+#   APIFY_TOKEN=... python3 apify.py descobrir "<produto/termo>" [saida.json] \
+#       [--n 20] [--lang pt] [--min-seg 500] [--max-seg 200000] [--excluir @handle]
 #   python3 apify.py autotest        # testa os mapeadores em amostra (sem token/rede)
 #
 # Actors (sobrescreva por env se quiser outro):
@@ -15,6 +17,7 @@
 #   APIFY_PROXY_COUNTRY  país do proxy p/ produtos, ex.: BR (precisa de proxy
 #                        residencial no plano Apify; sem isso, retorna US/global)
 #   APIFY_MIN_VENDAS     venda mínima p/ manter um produto (padrão 1; 0 = tudo)
+#   APIFY_LANG           idioma p/ filtrar creators na descoberta (padrão pt)
 #
 # Rede: usa só stdlib (urllib) e respeita HTTPS_PROXY + CA do ambiente.
 # ---------------------------------------------------------------------------
@@ -140,6 +143,33 @@ def filtrar_produtos(items, min_vendas=1, top=None):
         vistos.add(chave); out.append(p)
     return out[:top] if top else out
 
+def mapear_busca_criadores(items, lang="pt", min_seg=0, max_seg=None, excluir=None):
+    """Busca de vídeos por termo (produto) -> lista de CREATORS candidatos a
+    referência do nicho. Agrega autores, filtra idioma + faixa de seguidores +
+    exclui a própria pessoa, e ranqueia por relevância (frequência) e alcance."""
+    ex = (excluir or "").lstrip("@").lower()
+    ag = {}
+    for it in items:
+        am = it.get("authorMeta") or {}
+        h = am.get("name")
+        if not h: continue
+        a = ag.setdefault(h, {"handle": h, "nome": am.get("nickName") or "", "seguidores": 0,
+                              "videos": 0, "pt": 0, "exemplo": "",
+                              "url": am.get("profileUrl") or f"https://www.tiktok.com/@{h}"})
+        a["videos"] += 1
+        a["seguidores"] = max(a["seguidores"], am.get("fans") or 0)
+        if it.get("textLanguage") == "pt": a["pt"] += 1
+        if not a["exemplo"]: a["exemplo"] = (it.get("text") or "")[:60]
+    out = []
+    for a in ag.values():
+        if a["handle"].lower() == ex: continue                       # exclui a própria
+        if lang == "pt" and a["pt"] == 0: continue                   # filtro de idioma
+        if a["seguidores"] < min_seg: continue                       # faixa: piso
+        if max_seg is not None and a["seguidores"] > max_seg: continue  # faixa: teto
+        out.append(a)
+    out.sort(key=lambda x: (-x["videos"], -x["seguidores"]))         # relevância, depois alcance
+    return out
+
 # --------------------------- CLI --------------------------------------------
 def _arg_n(default):
     if "--n" in sys.argv:
@@ -150,6 +180,12 @@ def _arg_n(default):
 def _opt_int(flag):
     if flag in sys.argv:
         try: return int(sys.argv[sys.argv.index(flag) + 1])
+        except Exception: pass
+    return None
+
+def _opt_str(flag):
+    if flag in sys.argv:
+        try: return sys.argv[sys.argv.index(flag) + 1]
         except Exception: pass
     return None
 
@@ -179,6 +215,13 @@ AMOSTRA_PRODUTOS = [
     {"title": "Sérum Vitamina C 30ml", "price": 39.9, "soldCount": 12000, "revenue": 478800, "shopName": "Beauty Brazil", "rating": 4.8, "url": "https://shop.tiktok.com/x"},
     {"productName": "Mini Batom Matte", "salePrice": 24.5, "sales": 8300, "shop": "MAC", "stars": 4.7},
 ]
+AMOSTRA_BUSCA = [
+    {"textLanguage": "pt", "text": "kit 8 pincéis", "authorMeta": {"name": "ref_a", "nickName": "A", "fans": 50000}},
+    {"textLanguage": "pt", "text": "pincéis macrilan", "authorMeta": {"name": "ref_b", "nickName": "B", "fans": 800}},
+    {"textLanguage": "es", "text": "brochas", "authorMeta": {"name": "ref_es", "nickName": "ES", "fans": 300000}},   # não-pt -> cai
+    {"textLanguage": "pt", "text": "meus pincéis", "authorMeta": {"name": "pri.andrade50", "fans": 2006}},           # a própria -> cai
+    {"textLanguage": "pt", "text": "pincel gigante", "authorMeta": {"name": "ref_big", "fans": 9000000}},            # fora da faixa -> cai
+]
 
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -197,7 +240,10 @@ def main():
         assert len(fp) == 2 and all(isinstance(x["vendas"], (int, float)) for x in fp), "filtro: sem venda cai"
         assert [x["produto"] for x in fp].count("Sérum Vitamina C 30ml") == 1, "filtro: dedupe"
         assert fp[0]["vendas"] >= fp[-1]["vendas"], "filtro: ordena por vendas"
-        print("AUTOTEST OK — mapeadores + filtro válidos")
+        refs = mapear_busca_criadores(AMOSTRA_BUSCA, lang="pt", min_seg=100, max_seg=500000, excluir="@pri.andrade50")
+        assert {r["handle"] for r in refs} == {"ref_a", "ref_b"}, "descoberta: pt + faixa + exclui a própria"
+        assert refs[0]["seguidores"] == 50000, "descoberta: ordenação"
+        print("AUTOTEST OK — mapeadores + filtro + descoberta válidos")
         print(json.dumps({"perfil": p, "produtos": pr}, ensure_ascii=False, indent=2)[:900])
         return
     if cmd == "perfil":
@@ -230,6 +276,20 @@ def main():
         data = filtrar_produtos(crus, min_vendas=int(os.environ.get("APIFY_MIN_VENDAS", "1")), top=_opt_int("--top"))
         json.dump(data, open(saida, "w"), ensure_ascii=False, indent=2)
         print(f"produtos salvos: {saida} — {len(data)} de {len(crus)} (filtrado: sem venda/preço + dedupe, ordenado por vendas)")
+        return
+    if cmd == "descobrir":
+        termo = sys.argv[2]
+        saida = sys.argv[3] if len(sys.argv) > 3 and not sys.argv[3].startswith("--") else "referencias.json"
+        inp = {"searchQueries": [termo], "resultsPerPage": _arg_n(20),
+               "shouldDownloadVideos": False, "shouldDownloadCovers": False}
+        items = run_actor(ACTOR_PERFIL, inp, _token())
+        lang = _opt_str("--lang") or os.environ.get("APIFY_LANG", "pt")
+        refs = mapear_busca_criadores(items, lang=lang, min_seg=_opt_int("--min-seg") or 0,
+                                      max_seg=_opt_int("--max-seg"), excluir=_opt_str("--excluir"))
+        json.dump(refs, open(saida, "w"), ensure_ascii=False, indent=2)
+        print(f"referências: {saida} — {len(refs)} creators ({lang}) de {len(items)} vídeos p/ \"{termo}\"")
+        for r in refs[:20]:
+            print(f"  @{r['handle']:<22} {r['seguidores']:>8,} seg | {r['videos']}v | {r['exemplo'][:38]}".replace(",", "."))
         return
     print(__doc__); sys.exit(2)
 

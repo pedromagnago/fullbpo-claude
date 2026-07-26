@@ -34,7 +34,9 @@ Linha de produto interna pra avaliar creators/afiliados de TikTok. Organizada em
 
 ## Base compartilhada
 
-Hoje o `coleta-apify` puxa 1 perfil; as duas frentes precisam de vários. O `coletar_nicho.sh` roda a coleta sobre uma **lista de handles** e deixa um `nicho_<slug>/` com um `perfil_analise.json` por creator (+ `produtos.json` opcional). Os dois lados leem essa mesma pasta.
+Hoje o `coleta-apify` puxa 1 perfil; as duas frentes precisam de vários. Fluxo:
+1. **Descoberta** (`apify.py descobrir`): a partir do **produto do vídeo viral** (extraído do texto), acha as referências do nicho — filtra idioma (pt) + faixa de seguidores, sem hashtag nem @ manual. → `referencias.json`.
+2. **Coleta** (`coletar_nicho.sh`): roda a coleta sobre a lista de handles → `nicho_<slug>/` com um `perfil_analise.json` por creator (+ `produtos.json` opcional). Os dois lados leem essa mesma pasta.
 
 ## Próximos passos (a aprofundar)
 

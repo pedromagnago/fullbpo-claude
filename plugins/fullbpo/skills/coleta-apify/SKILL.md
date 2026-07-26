@@ -44,6 +44,15 @@ Gera `produtos.json` — lista normalizada: `produto, preco, vendas, receita, lo
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" autotest
 ```
 
+## Descoberta de nicho (referências — sem hashtag/@)
+
+Acha as **referências do nicho** ancorando no **produto do vídeo viral** (que o Claude extrai do texto/transcrição do vídeo), sem hashtag genérica nem lista manual de @:
+```bash
+APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" \
+  descobrir "<produto do viral>" referencias.json --min-seg 500 --max-seg 300000 --excluir "@cliente"
+```
+Busca o produto → agrega os autores dos vídeos → filtra **idioma (pt)** + **faixa de seguidores** + tira a própria cliente → ranqueia por relevância/alcance. Saída `referencias.json` (handles) alimenta o `coletar_nicho.sh`. Dica: a busca do TikTok varia a cada run — rode com **termos variados do mesmo produto** pra ampliar a cobertura, e o Claude cura a lista final.
+
 ## Avaliação completa (orquestrador)
 
 Para rodar tudo de uma vez (perfil + vídeo + produtos → dossiê com `conteudo.json` pré-preenchido), use o comando **`/avaliar`** ou direto:
