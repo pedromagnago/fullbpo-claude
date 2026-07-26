@@ -12,6 +12,8 @@
 # Actors (sobrescreva por env se quiser outro):
 #   APIFY_ACTOR_PERFIL   (padrão clockworks/tiktok-scraper)
 #   APIFY_ACTOR_PRODUTOS (padrão trakk/tiktok-shop-search-scraper)
+#   APIFY_PROXY_COUNTRY  país do proxy p/ produtos, ex.: BR (precisa de proxy
+#                        residencial no plano Apify; sem isso, retorna US/global)
 #
 # Rede: usa só stdlib (urllib) e respeita HTTPS_PROXY + CA do ambiente.
 # ---------------------------------------------------------------------------
@@ -186,6 +188,16 @@ def main():
         # input no schema do trakk/tiktok-shop-search-scraper (padrão); outro actor -> ajuste as chaves
         inp = {"keywords": [termo], "country_code": os.environ.get("APIFY_PAIS", "BR"),
                "maxItems": _arg_n(50), "mode": "fast", "sortBy": os.environ.get("APIFY_SORT", "best_sellers")}
+        # Para dado BR real (BRL) o TikTok exige IP do país -> proxy residencial.
+        # Defina APIFY_PROXY_COUNTRY=BR (precisa de proxy residencial no plano Apify).
+        # Sem isso, o actor retorna o catálogo global (US/USD) como referência de categoria.
+        pais_proxy = os.environ.get("APIFY_PROXY_COUNTRY")
+        if pais_proxy:
+            inp["proxyConfiguration"] = {
+                "useApifyProxy": True,
+                "apifyProxyGroups": [os.environ.get("APIFY_PROXY_GROUP", "RESIDENTIAL")],
+                "apifyProxyCountry": pais_proxy,
+            }
         items = run_actor(ACTOR_PRODUTOS, inp, _token())
         data = mapear_produtos(items)
         json.dump(data, open(saida, "w"), ensure_ascii=False, indent=2)

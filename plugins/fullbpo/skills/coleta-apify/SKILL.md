@@ -33,6 +33,12 @@ APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify
 ```
 Gera `produtos.json` — lista normalizada: `produto, preco, vendas, receita, loja, rating, url`.
 
+> **Dado BR (BRL):** o TikTok só serve o catálogo brasileiro pra um **IP do Brasil**. Sem isso, o actor retorna o catálogo **global (US/USD)** — útil como referência de categoria, mas não é o preço/oferta BR. Para dado BR real, rode com **proxy residencial BR**:
+> ```bash
+> APIFY_PROXY_COUNTRY=BR APIFY_TOKEN=... python3 .../apify.py produtos "pincel de maquiagem" produtos.json
+> ```
+> Isso exige **proxy residencial** habilitado no plano Apify (add-on pago) — no plano FREE o resultado volta vazio ou global. Enquanto não houver, trate os produtos como sinal de categoria e cruze com o que os concorrentes **BR** já vendem nos vídeos.
+
 **Autoteste** (valida os mapeadores sem token/rede):
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" autotest
