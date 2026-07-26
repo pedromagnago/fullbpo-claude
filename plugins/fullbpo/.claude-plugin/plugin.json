@@ -1,7 +1,7 @@
 {
   "name": "fullbpo",
   "description": "Backoffice contábil-financeiro brasileiro: 58 agentes (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, SPED, eSocial, folha, conciliações, fechamento, controladoria) + comandos de rotina D/S/M + método e voz da marca FullBPO + MCP Omie/FinOps (leitura + escrita) pra consultar e lançar contas a pagar/receber, baixas e cadastros direto no chat — escrita sempre em dry_run por padrão, com confirmação humana. Tudo em pt-BR.",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "author": {
     "name": "Pedro Magnago — FullBPO",
     "email": "pedro.magnago@fullbpo.com"

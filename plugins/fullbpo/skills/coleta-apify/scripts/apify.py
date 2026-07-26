@@ -6,7 +6,7 @@
 #
 # Uso:
 #   APIFY_TOKEN=... python3 apify.py perfil <@handle|url> [saida.json] [--n 30]
-#   APIFY_TOKEN=... python3 apify.py produtos "<palavra|url>" [saida.json] [--n 100]
+#   APIFY_TOKEN=... python3 apify.py produtos "<palavra|url>" [saida.json] [--n 100] [--top 20]
 #   python3 apify.py autotest        # testa os mapeadores em amostra (sem token/rede)
 #
 # Actors (sobrescreva por env se quiser outro):
@@ -14,6 +14,7 @@
 #   APIFY_ACTOR_PRODUTOS (padrão trakk/tiktok-shop-search-scraper)
 #   APIFY_PROXY_COUNTRY  país do proxy p/ produtos, ex.: BR (precisa de proxy
 #                        residencial no plano Apify; sem isso, retorna US/global)
+#   APIFY_MIN_VENDAS     venda mínima p/ manter um produto (padrão 1; 0 = tudo)
 #
 # Rede: usa só stdlib (urllib) e respeita HTTPS_PROXY + CA do ambiente.
 # ---------------------------------------------------------------------------
@@ -126,12 +127,31 @@ def mapear_produtos(items):
         })
     return out
 
+def filtrar_produtos(items, min_vendas=1, top=None):
+    """Limpa o pull cru: exige venda >= min e preço, remove duplicados
+    (mesmo título+loja) e ordena por vendas (desc). Corta lixo antes da curadoria."""
+    vistos, out = set(), []
+    for p in sorted(items, key=lambda x: -(x.get("vendas") or 0)):
+        v = p.get("vendas")
+        if not isinstance(v, (int, float)) or v < min_vendas: continue   # sem venda -> fora
+        if p.get("preco") in (None, ""): continue                        # sem preço -> fora
+        chave = ((p.get("produto") or "").strip().lower()[:60], (p.get("loja") or "").strip().lower())
+        if chave in vistos: continue                                     # duplicado -> fora
+        vistos.add(chave); out.append(p)
+    return out[:top] if top else out
+
 # --------------------------- CLI --------------------------------------------
 def _arg_n(default):
     if "--n" in sys.argv:
         try: return int(sys.argv[sys.argv.index("--n") + 1])
         except Exception: pass
     return default
+
+def _opt_int(flag):
+    if flag in sys.argv:
+        try: return int(sys.argv[sys.argv.index(flag) + 1])
+        except Exception: pass
+    return None
 
 def _token():
     t = os.environ.get("APIFY_TOKEN")
@@ -170,7 +190,14 @@ def main():
         assert p["cadencia_semana"] > 0 and p["duracao_media"] == 105, "cadencia/dur"
         assert len(p["top_videos"]) == 3 and p["top_videos"][0]["views"] == 7052, "top"
         assert len(pr) == 2 and pr[0]["vendas"] == 12000 and pr[1]["preco"] == 24.5, "produtos"
-        print("AUTOTEST OK — mapeadores válidos")
+        fp = filtrar_produtos(pr + [
+            {"produto": "Lixo sem venda", "preco": 9.9, "vendas": None, "loja": "X"},
+            {"produto": "Sérum Vitamina C 30ml", "preco": 39.9, "vendas": 5, "loja": "Beauty Brazil"},
+        ])
+        assert len(fp) == 2 and all(isinstance(x["vendas"], (int, float)) for x in fp), "filtro: sem venda cai"
+        assert [x["produto"] for x in fp].count("Sérum Vitamina C 30ml") == 1, "filtro: dedupe"
+        assert fp[0]["vendas"] >= fp[-1]["vendas"], "filtro: ordena por vendas"
+        print("AUTOTEST OK — mapeadores + filtro válidos")
         print(json.dumps({"perfil": p, "produtos": pr}, ensure_ascii=False, indent=2)[:900])
         return
     if cmd == "perfil":
@@ -199,9 +226,10 @@ def main():
                 "apifyProxyCountry": pais_proxy,
             }
         items = run_actor(ACTOR_PRODUTOS, inp, _token())
-        data = mapear_produtos(items)
+        crus = mapear_produtos(items)
+        data = filtrar_produtos(crus, min_vendas=int(os.environ.get("APIFY_MIN_VENDAS", "1")), top=_opt_int("--top"))
         json.dump(data, open(saida, "w"), ensure_ascii=False, indent=2)
-        print(f"produtos salvos: {saida} — {len(data)} itens")
+        print(f"produtos salvos: {saida} — {len(data)} de {len(crus)} (filtrado: sem venda/preço + dedupe, ordenado por vendas)")
         return
     print(__doc__); sys.exit(2)
 

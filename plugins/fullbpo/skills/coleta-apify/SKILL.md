@@ -31,7 +31,7 @@ APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify
   produtos "sérum vitamina c" produtos.json --n 100
 # ou uma URL de categoria/loja/produto do TikTok Shop no lugar da palavra-chave
 ```
-Gera `produtos.json` — lista normalizada: `produto, preco, vendas, receita, loja, rating, url`.
+Gera `produtos.json` — lista normalizada: `produto, preco, vendas, receita, loja, rating, url`. O pull **já vem filtrado**: descarta produto sem venda, sem preço e duplicado (mesmo título+loja), ordenado por vendas (desc). Ajuste com `APIFY_MIN_VENDAS` (padrão 1) e `--top N`. Depois disso, o Claude ainda cura o que entra no relatório.
 
 > **Dado BR (BRL):** o TikTok só serve o catálogo brasileiro pra um **IP do Brasil**. Sem isso, o actor retorna o catálogo **global (US/USD)** — útil como referência de categoria, mas não é o preço/oferta BR. Para dado BR real, rode com **proxy residencial BR**:
 > ```bash
