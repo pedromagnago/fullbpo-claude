@@ -37,29 +37,37 @@ Pedidos como "compara esses perfis do nicho", "mapa da concorrência de X", "que
 O `montar_mapa.py` acima compara N perfis de forma simétrica. Mas o entregável do cliente é **centrado em 1 creator-alvo** (ex.: a cliente) — os concorrentes e o nicho entram como munição. Use `montar_shop.py`:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/mapa-nicho/scripts/montar_shop.py" "<shop.json>" "<saida.html>"
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/mapa-nicho/scripts/montar_shop.py" \
+  "<shop.json>" "<saida.html>" --perfis "nicho_<slug>"
 ```
 
 Ele monta um dash que responde, **para a cliente**: onde ela está · **como a concorrência viraliza** · **quais vídeos do nicho viralizaram** · **quais produtos vendem bem e ela pode adotar** · recomendações. Você escreve o `shop.json` juntando: o perfil dela, os concorrentes (`perfil_analise.json`), os virais (`achar_virais.py` da Frente 2) e os produtos (`coleta-apify produtos`).
+
+**Tudo num arquivo só.** Com `--perfis <dir>`, o dash embute **um dossiê clicável por perfil avaliado** (KPIs + vídeos de maior alcance com link + ângulo/hashtags + *segredo da trend*), carregado direto dos `<handle>.json` do `coletar_nicho.sh`. Cada `@handle` nas tabelas vira âncora (`#d-<handle>`) que leva ao dossiê — o clique funciona mesmo no link compartilhável, sem depender de arquivos soltos. Uma seção **"Avaliações · dossiê por perfil"** lista todos com "ver análise completa".
+
+**Links & moeda.** Produtos ganham link pra loja (campo `url`) e nota (`rating`); vídeos virais linkam pro vídeo. Preços em **USD são convertidos pra BRL** pelo câmbio de referência (`cambio`, padrão 5.08) e o dash mostra `R$ x (US$ y)` com o caveat de mercado global.
 
 Esquema do `shop.json`:
 ```json
 {
   "cliente": "Nome — Divisão Shop", "data": "DD/MM/AAAA",
+  "cambio": 5.08,
   "subject": {"handle":"…","nome":"…","seguidores":0,"mediana":0,"engajamento":0,"cadencia":0,"melhor":0,"duracao":0,
-              "viral": {"titulo":"…","views":0,"multiplo":0,"url":"…"}},
+              "viral": {"titulo":"…","views":0,"multiplo":0,"url":"…"},
+              "dossie": {"leitura":"quem é / diagnóstico…","segredo":"o segredo da trend dele…"}},
   "resumo": ["…"],
-  "concorrentes": [{"handle":"…","nome":"…","seguidores":0,"mediana":0,"engajamento":0,"melhor":0,"como_viraliza":"…"}],
+  "concorrentes": [{"handle":"…","nome":"…","seguidores":0,"mediana":0,"engajamento":0,"melhor":0,"como_viraliza":"…",
+                    "dossie": {"leitura":"…","segredo":"…"}}],
   "virais_nicho": [{"handle":"…","multiplo":0,"views":0,"titulo":"…","url":"…"}],
   "padrao_virais": "o que os virais têm em comum…",
-  "produtos_nicho": [{"produto":"…","vendas":0,"preco":"…","moeda":"USD","loja":"…"}],
-  "produtos_nota": "fonte + caveat de região (BR vs global)…",
+  "produtos_nicho": [{"produto":"…","vendas":0,"preco":41.17,"moeda":"USD","rating":4.7,"loja":"…","url":"https://shop.tiktok.com/…"}],
+  "produtos_nota": "sinal de categoria + o que dobrar…",
   "recomendacoes": [{"titulo":"…","texto":"…"}]
 }
 ```
-Texto aceita `**negrito**` e `*itálico*`.
+Texto aceita `**negrito**` e `*itálico*`. O `dossie` de cada perfil é **opcional**: sem ele, o dash cai pra `como_viraliza` (leitura) e deriva o segredo do vídeo de maior alcance. O `--perfis` traz KPIs, top vídeos e hashtags dos `<handle>.json`; o `dossie` só acrescenta a leitura editorial e o segredo.
 
-> Nota de dados: o actor de produtos padrão retorna **mercado global (USD)** mesmo com `country_code=BR` — trate os produtos como sinal de categoria e valide fornecedor/disponibilidade BR (deixe claro no `produtos_nota`).
+> Nota de dados: o actor de produtos padrão retorna **mercado global (USD)** mesmo com `country_code=BR`. O dash converte pra BRL (câmbio `cambio`) mas deixa claro que é **sinal de categoria** — sempre valide fornecedor/preço/disponibilidade BR. O `url` do produto aponta pra loja original (referência de produto, não de compra no BR).
 
 ## A aprofundar (roadmap)
 
