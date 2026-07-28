@@ -24,7 +24,13 @@ Monta **um único HTML com abas** que reúne todas as entregas de um creator, pa
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/central-creator/scripts/montar_central.py" \
      "<central.json>" "<Central_Cliente.html>"
    ```
-4. **Revise e entregue** (regra de ouro FullBPO: revisão humana antes do cliente). Publique como 1 artifact / 1 arquivo.
+4. **Gere o PDF** (entrega padrão — não depende de publicar/compartilhar artifact):
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/skills/central-creator/scripts/montar_pdf.py" \
+     "<central.json>" "<Central_Cliente.pdf>"
+   ```
+   Imprime cada aba `embed` via Chromium headless e junta num PDF único, na ordem das abas, com marcadores por seção. Requer Chromium (`FULLBPO_CHROME=/caminho` ou nos paths comuns, ex.: `/opt/pw-browsers/chromium`) e `pip install pypdf`. A Central HTML de abas/iframes **não** imprime bem inteira — por isso o PDF é montado peça a peça.
+5. **Revise e entregue** (regra de ouro FullBPO: revisão humana antes do cliente). **Entregue o PDF** (portátil, encaminhável); o HTML/artifact fica como versão navegável opcional.
 
 ## Esquema do `central.json`
 
