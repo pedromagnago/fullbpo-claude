@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["mcp>=1.2.0", "httpx>=0.28", "python-dotenv>=1.0"]
+# dependencies = ["mcp>=1.2.0,<2", "httpx>=0.28", "python-dotenv>=1.0"]
 # ///
 """Servidor MCP slim do plugin FullBPO — Omie/FinOps (leitura + escrita).
 

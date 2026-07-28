@@ -3,6 +3,10 @@
     "fullbpo-omie": {
       "command": "uv",
       "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp/omie_mcp.py"]
+    },
+    "fullbpo-d4sign": {
+      "command": "uv",
+      "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/mcp/d4sign_mcp.py"]
     }
   }
 }
