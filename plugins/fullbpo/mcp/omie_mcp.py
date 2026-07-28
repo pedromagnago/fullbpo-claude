@@ -110,6 +110,17 @@ def omie_listar_categorias(cliente: str, pagina: int = 1,
 
 
 @mcp.tool()
+def omie_listar_contas_correntes(cliente: str, pagina: int = 1,
+                                 registros_por_pagina: int = 100) -> dict:
+    """Contas correntes (banco/caixa/aplicação) do cliente no Omie (só-leitura).
+    Devolve o nCodCC de cada conta — o código que omie_listar_extrato (n_cod_cc) e
+    as tools de escrita (id_conta_corrente) exigem, e que nenhuma outra tool revela.
+    cliente = nome ou company_id (UUID)."""
+    return omie.listar_contas_correntes(cliente, pagina=pagina,
+                                        registros_por_pagina=registros_por_pagina)
+
+
+@mcp.tool()
 def omie_listar_clientes_fornecedores(cliente: str, apenas_cliente: bool = False,
                                       apenas_fornecedor: bool = False, pagina: int = 1,
                                       registros_por_pagina: int = 50) -> dict:
@@ -126,6 +137,17 @@ def omie_sync_company(cliente: str, desde: str | None = None,
     """Espelha (sincroniza) os dados do Omie do cliente na base do FinOps. Use
     dry_run=True p/ simular antes. desde=yyyy-MM-dd recorta o período."""
     return omie.sync_company(cliente, desde=desde, dry_run=dry_run, full_sync=full_sync)
+
+
+@mcp.tool()
+def omie_posicao_financeira(cliente: str) -> dict:
+    """Snapshot de caixa do cliente: soma os títulos ABERTOS a pagar e a receber
+    por bucket (vencido / a vencer) e devolve a posição líquida. Agregador
+    SÓ-LEITURA, composto de omie_contas_a_pagar + omie_contas_a_receber (não chama
+    tool nova no servidor). Não inclui saldo bancário — só títulos. Títulos sem
+    valor/data reconhecível entram em contadores próprios; nada some em silêncio.
+    cliente = nome ou company_id (UUID)."""
+    return omie.posicao_financeira(cliente)
 
 
 # ─── Omie ESCRITA (via FinOps) — dry_run=True por PADRÃO ──────────────────────
