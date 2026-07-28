@@ -35,6 +35,28 @@ Quando o pedido for um **estudo/análise entregável** de um vídeo de referênc
    ```
 6. **Revisar e entregar.** Confira o HTML (abra/rende). Todo entregável passa por **revisão humana antes de ir ao cliente** (regra de ouro FullBPO).
 
+## Teardown comparativo (vários vídeos das referências)
+
+Quando o pedido é "analisa os vídeos das concorrentes" / "o que faz o vídeo deles estourar" — não 1 vídeo a fundo, mas o **padrão** entre os virais do nicho — use `scripts/montar_referencias.py`. Fluxo:
+
+1. Pegue os **top virais** de cada concorrente (do `analise_profunda.py`/`transcrever.py` ou do playbook-virais) e rode o `assistir_video.sh` em cada um (frames + transcrição).
+2. **Assista cada um** (contact sheets + primeiros frames = o gancho visual; transcrição = o gancho falado) e escreva um `ref_videos.json`:
+   ```json
+   {"cliente":"Nome","cliente_curto":"Apelido","subtitulo":"…","lead":"…",
+    "videos":[{"handle":"…","seguidores":20800,"views":169100,"url":"…","arquetipo":"Caro × dupe barato",
+      "frames":["pasta/frames/frame_001_t0000.0s.jpg"],"gancho":"a fala dos ~3s",
+      "dispositivo":"o recurso visual (rosto dividido, close no resultado…)",
+      "estrutura":["0–4s: …","4–85s: …"],"copiar":["…","…"]}],
+    "sintese":{"titulo":"…","intro":"…","padrao":["…"],"evitar":["…"],
+      "roteiro":[{"t":"0–3s","o":"…"}]}}
+   ```
+   `frames` (1–2 por vídeo) são embutidos em base64 — priorize o **frame do gancho**. Reduza a ~540px de largura p/ o HTML não inchar.
+3. **Monte:**
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/skills/estudo-de-video/scripts/montar_referencias.py" "<ref_videos.json>" "<referencias.html>"
+   ```
+   Vira a aba **Referências (vídeos)** da `central-creator`. O valor está na `sintese` — o padrão comum + o roteiro-modelo que o cliente executa.
+
 ## Esquema do `conteudo.json`
 
 Texto aceita **`**negrito**`** e **`*itálico*`**. Campos opcionais podem ser omitidos (a seção some).
