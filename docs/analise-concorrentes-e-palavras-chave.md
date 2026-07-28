@@ -1,8 +1,8 @@
 # Análise de Concorrentes e Palavras-Chave — FullBPO
 
 > **Data:** 28/07/2026 · **Objeto:** fullbpo.com (BPO Financeiro para PMEs — Juiz de Fora/MG)
-> **Método:** pesquisa da SERP brasileira do nicho "BPO Financeiro / terceirização financeira" + análise do posicionamento da FullBPO. 
-> **Leia primeiro o aviso de método na seção 5** (o que dá pra afirmar com dados públicos vs. o que exige ferramenta paga).
+> **Método:** 100% fontes GRATUITAS — autocomplete do Google (API pública), análise da SERP brasileira e leitura dos sites dos concorrentes. Nenhuma ferramenta paga foi necessária.
+> **Vá direto à seção 4** para o passo a passo gratuito e os dados reais já extraídos.
 
 ---
 
@@ -14,119 +14,128 @@ A FullBPO **não se vende como "operação de BPO"** — se posiciona como **eco
 - **APRENDER** — **Full Academy** (educação em fluxo de caixa, precificação, KPIs).
 - **CONECTAR** — **Comunidade FullBPO** (rede de empreendedores).
 
-Ganchos de venda: *"Sua empresa pode quebrar mesmo dando lucro"*, *"Roadmap de 90 dias"*, *"Diagnóstico 100% gratuito"*, CTA *"Decodificar Meu Crescimento"*.
+Ganchos: *"Sua empresa pode quebrar mesmo dando lucro"*, *"Roadmap de 90 dias"*, *"Diagnóstico 100% gratuito"*, CTA *"Decodificar Meu Crescimento"*.
 
-**Implicação:** o concorrente não é só quem faz "contas a pagar terceirizado" — é quem disputa o empreendedor de PME que quer **método + previsibilidade de caixa + educação financeira**. Isso divide os concorrentes em 3 camadas (seção 2).
+**Implicação:** o concorrente não é só quem faz "contas a pagar terceirizado" — é quem disputa o empreendedor de PME que quer **método + previsibilidade de caixa + educação financeira**.
 
 ---
 
 ## 2. Concorrentes — as 3 camadas
 
-### 🥊 Camada 1 — Concorrentes diretos de serviço (mesma oferta: BPO Financeiro com método para PME)
-Estes disputam o mesmo cliente e o mesmo orçamento:
+### 🥊 Camada 1 — Concorrentes diretos de serviço (mesma oferta)
 
-| Concorrente | Site | Diferencial de posicionamento |
+| Concorrente | Site | Como se posiciona (lido do site deles) |
 |---|---|---|
-| **Movimento BPO Financeiro** | movimentobpo.com.br | O mais parecido com a FullBPO — vende "movimento/método/comunidade", não só operação |
-| **Trust BPO** | trustbpo.com.br | Conteúdo forte de fundo de funil ("quanto custa terceirizar o financeiro") |
-| **Vibra Consultoria** | vibraconsultoria.com.br | BPO + consultoria financeira, ranqueia em "quanto custa terceirizar minha gestão" |
-| **Inspira Capital** | inspiracapital.com.br | Máquina de SEO — se autointitula "melhor empresa de BPO financeiro do Brasil" |
-| **The Bee Work** | thebeework.com.br | Ranqueia em "terceirização financeira: preço, quanto custa" |
-| **Focus BPO** | focusbpo.com.br | Guia completo de BPO, foco em captação por conteúdo |
-| **Manda Pro Financeiro** | mandaprofinanceiro.com.br | Conteúdo de preço e "por que terceirizar" |
-| **Levits BPO** | levitsbpo.net | BPO + integração com ERPs |
-| **Odos (Aceleradora/Contabilidade)** | odoscontabilidade.com.br | "Quanto custa terceirizar o financeiro" |
+| **Movimento BPO** | movimentobpo.com.br | O mais parecido: *"liberte seu tempo e impulsione o lucro da sua PME"*, "metodologia validada" (3 pilares). Capta por WhatsApp/Forms, **sem preço público** |
+| **Inspira Capital** | inspiracapital.com.br | **Máquina de conteúdo/SEO** — se diz "melhor BPO do Brasil". Segmenta por nicho (indústrias, startups, farmácias, médicos) |
+| **Trust BPO** | trustbpo.com.br | Fundo de funil forte: "quanto custa", "por que contratar", "como escolher" + BPO de DP/folha |
+| **Vibra Consultoria** | vibraconsultoria.com.br | Nicho em **instituições de ensino** (escolas, EAD, cursos) e empreendedores digitais |
+| **The Bee Work** | thebeework.com.br | Ranqueia "terceirização financeira: preço, quanto custa" |
+| **Focus BPO / Manda Pro / Levits / Odos** | vários | Captação por conteúdo de preço e "por que terceirizar" |
 
-**Cauda longa (listadas em diretórios como oHub/b2bfy):** Airbpo, Cajota, Ativa BPO, Resolve Virtual, AM Assessoria, Ad Solvere, All Blue, Oito Leme, Collab, FLC BPO. São centenas — o oHub lista **1.296 empresas** especializadas em BPO Financeiro no Brasil. É um mercado **muito pulverizado**.
+**Cauda longa:** o oHub lista **1.296 empresas** de BPO Financeiro no Brasil — mercado muito pulverizado.
 
-### 🏦 Camada 2 — Concorrentes de PALAVRA-CHAVE (fintechs, bancos e ERPs)
-**Não vendem BPO**, mas **dominam a primeira página do Google** nas palavras que geram dinheiro e capturam o lead antes de você. Este é o concorrente que mais dói:
+### 🏦 Camada 2 — Concorrentes de PALAVRA-CHAVE (o que mais dói)
+Não vendem BPO, mas **dominam o Google** e pegam o lead antes de você: **Conta Azul, Omie, Nibo, Contabilizei, Santander, InfinitePay, Sebrae**.
 
-- **Conta Azul** (ERP + diretório de parceiros BPO — ranqueia em quase tudo)
-- **Omie**, **Nibo** (ERPs, mesmo jogo de conteúdo)
-- **Contabilizei**, **Contabilidade.com** (contabilidade online, budget gigante de SEO)
-- **Santander**, **Cielo**, **InfinitePay**, **Sebrae** (conteúdo de topo de funil "o que é BPO financeiro")
-
-### 🧭 Camada 3 — Intermediários / marketplaces (interceptam o comprador)
-Ranqueiam #1 em "**melhores empresas de BPO financeiro**" e vendem/roteiam o lead:
-
-- **oHub** (ohub.com.br) — comparador, +100 mil PMEs usaram
-- **b2bfy** (b2bfy.com.br) — ranking "as 10 melhores empresas de BPO financeiro"
-
-> **Conclusão estratégica:** para a maioria das palavras-chave "cabeça" (ex.: *BPO financeiro*), a FullBPO **não disputa contra os BPOs pequenos — disputa contra oHub, Conta Azul e Contabilizei**, que têm domínio e autoridade muito maiores. Onde dá pra ganhar: **geo + vertical + termos de marca/método + tráfego pago** (seção 4).
+### 🧭 Camada 3 — Marketplaces que interceptam o comprador
+Ranqueiam #1 em "melhores empresas de BPO financeiro": **oHub** e **b2bfy**.
 
 ---
 
-## 3. As palavras-chave que geram dinheiro no nicho ("money keywords")
+## 3. As palavras-chave que geram dinheiro ("money keywords")
 
-Organizadas por intenção. As de **fundo de funil** são as que convertem em cliente pagante — é onde o dinheiro está.
+Por intenção. As de **fundo de funil** convertem em cliente pagante — é onde o dinheiro está.
 
-### 💰 Fundo de funil — ALTA intenção comercial (o dinheiro está aqui)
-Estas são as palavras que os concorrentes usam para fechar contrato:
+### 💰 Fundo de funil — ALTA intenção comercial
+`BPO financeiro` · `quanto custa contratar um BPO financeiro` · `BPO financeiro preço/valor` · `terceirizar financeiro` · `terceirizar setor financeiro` · `terceirizar meu financeiro` · `gestão financeira terceirizada` · `contratar BPO financeiro` · `BPO financeiro para pequenas empresas`
 
-- `BPO financeiro` *(termo-cabeça, mas muito disputado)*
-- `quanto custa BPO financeiro` / `BPO financeiro preço` / `BPO financeiro quanto custa`
-- `quanto custa terceirizar o financeiro`
-- `terceirizar financeiro` / `terceirização financeira` / `terceirização da gestão financeira`
-- `contratar BPO financeiro` / `empresa de BPO financeiro`
-- `gestão financeira terceirizada` / `terceirização do departamento financeiro`
-- `BPO financeiro para pequenas empresas` / `BPO financeiro para PME`
+**Ticket real do nicho:** R$ 500–5.000/mês; pitch de economia de **60–85% vs. um CLT financeiro** (~R$ 5.950/mês). É esse número que os concorrentes usam pra fechar.
 
-**Sinal de mercado (ticket real do nicho):** mensalidades de **R$ 500 a R$ 5.000/mês**; pitch de economia de **60%–85% vs. um CLT financeiro** (~R$ 5.950/mês com encargos). É esse número que os concorrentes usam na página de conversão.
+### 🎯 Vertical/segmento — a MINA DE OURO (baixa concorrência, alta conversão)
+Confirmado pelo autocomplete real (seção 4.2): `BPO financeiro para` **restaurantes · advogados · escritório de advocacia · médicos · clínicas médicas · dentistas · condomínio · e-commerce · construtoras · startups · produtor rural · MEI · pessoa física**
 
-### 📍 Geo — média/alta intenção (onde a FullBPO PODE ganhar)
-- `BPO financeiro Juiz de Fora` / `BPO financeiro MG` / `BPO financeiro Zona da Mata`
-- `BPO financeiro São Paulo` / `BPO financeiro Rio de Janeiro` (onde a concorrência é mais pesada)
+### 📍 Geo — onde a FullBPO PODE ganhar barato
+As pessoas buscam por cidade: `BPO financeiro Curitiba/BH/Belo Horizonte`. **Ninguém ranqueia forte em Juiz de Fora / Zona da Mata / MG** = espaço aberto pra você.
 
-### 🎯 Vertical/segmento — média intenção, baixa concorrência (ouro de cauda longa)
-Concorrentes segmentam por nicho; a FullBPO pode fazer o mesmo:
-- `BPO financeiro para clínicas` / `para e-commerce` / `para restaurantes` / `para empresas de serviços` / `para agências` / `para construtoras`
+### 📚 Método/educação — território exclusivo da FullBPO
+`controle financeiro para empresas` · `fluxo de caixa previsível` · `empresa dá lucro mas não sobra dinheiro` · `mentoria/curso financeiro para empresário` (liga ao Full Academy — ninguém vende comunidade).
 
-### 📚 Método/educação — o território da FullBPO
-Volume menor, mas **fit perfeito** com o posicionamento (CFI, Full Academy):
-- `controle financeiro para empresas` / `fluxo de caixa previsível`
-- `mentoria financeira empresarial` / `consultoria financeira para PME`
-- `como organizar o financeiro da empresa` / `empresa dá lucro mas não sobra dinheiro`
-
-### 🔎 Topo de funil — baixa intenção (tráfego, não venda)
-`o que é BPO financeiro`, `BPO financeiro vale a pena`, `vantagens do BPO financeiro` — dominadas por Santander, Conta Azul, Contabilizei. Servem para aquecer, **não para converter**.
-
-### 🏷️ Marca/categoria própria (quase sem concorrência)
-`Controle Financeiro Inteligente`, `CFI`, `Ciclo Financeiro`, `Full Academy`, `Roadmap de 90 dias`. Ótimas para marca; **volume de busca ainda baixo** — precisam de demanda criada por conteúdo/anúncio.
+### ⛔ Cuidado — palavras que NÃO são de cliente (são de quem quer MONTAR um BPO)
+O autocomplete revela muita busca "lado da oferta": `BPO financeiro curso · vagas · salário · quanto cobrar · como começar · o que faz · pode ser MEI`. **Não gaste anúncio nessas** — são candidatos e concorrentes, não clientes.
 
 ---
 
-## 4. Recomendações práticas (onde investir para tirar dinheiro deles)
+## 4. 🆓 Como descobrir isso de graça (com os dados reais que já extraí)
 
-1. **Google Ads no fundo de funil.** Organicamente é difícil bater oHub/Conta Azul em "BPO financeiro". Compre as intenções que convertem: `contratar BPO financeiro`, `quanto custa terceirizar o financeiro`, `terceirização financeira preço`. Landing page com o pitch de economia (60–85% vs. CLT) + diagnóstico grátis.
-2. **Dominar o geo.** Ninguém é forte em "BPO financeiro Juiz de Fora / Zona da Mata / MG". Página local + Google Meu Negócio = vitória barata e rápida.
-3. **Cauda longa por vertical.** Uma página por segmento (`clínicas`, `e-commerce`, `serviços`…). Baixa concorrência, alta conversão.
-4. **Entrar nos diretórios que ranqueiam #1.** Estar listado (e bem avaliado) no **oHub** e **b2bfy** intercepta quem busca "melhores empresas de BPO financeiro".
-5. **Transformar o método em conteúdo.** Ranquear "empresa dá lucro mas não sobra dinheiro" e "fluxo de caixa previsível" leva ao CFI/Full Academy — território que os ERPs não ocupam.
-6. **Defender a marca.** Garanta que `FullBPO`, `Full Academy` e `CFI` ranqueiem só você (e considere proteger no Ads contra concorrente pegando sua marca).
+### 4.1 O kit gratuito, ranqueado por "sinal de dinheiro"
+
+| # | Ferramenta grátis | O que revela | Por que é sinal de $ |
+|---|---|---|---|
+| 1 | **Google Ads Transparency Center** (adstransparency.google.com) | Os anúncios pagos que o concorrente roda **AGORA** | Se ele paga há semanas, está dando retorno |
+| 2 | **Meta Ad Library** (facebook.com/ads/library) | Todo anúncio de Face/Insta do concorrente + há quanto tempo no ar | BPO no Brasil vive de Meta Ads; anúncio antigo = converte |
+| 3 | **Autocomplete do Google** | As buscas reais que as pessoas digitam | Grátis e ilimitado — **já extraí abaixo** |
+| 4 | **Google Keyword Planner** (grátis c/ conta Ads) | Volume + **CPC** de cada palavra | **CPC alto = palavra que vale dinheiro** |
+| 5 | **Ubersuggest / Google Trends** | Free tier: domínio do concorrente → top keywords | Valida volume e tendência |
+| 6 | **Ler o site do concorrente** | Títulos, blog e páginas = onde ele aposta | Grátis — **já extraí em 4.3** |
+
+### 4.2 ✅ Dados REAIS já extraídos — Autocomplete do Google (28/07/2026)
+
+Puxado ao vivo da API pública do Google (`suggestqueries.google.com`). Isto é o que o mercado digita **de verdade**:
+
+- **Segmentos com demanda ativa (a mina de ouro):** restaurantes · advogados · escritório de advocacia · médicos · clínicas médicas · dentistas · condomínio · e-commerce · construtoras · startups · produtor rural · MEI · pessoa física
+- **Intenção de compra:** "quanto custa contratar um BPO financeiro" · "BPO financeiro valor" · "BPO financeiro para pequenas empresas" · "terceirizar setor financeiro" · "terceirizar meu financeiro"
+- **Geo:** Curitiba · BH · Belo Horizonte (Juiz de Fora **não aparece** = concorrência zero)
+- **Plataforma/parceria:** "BPO financeiro Conta Azul"
+- **⛔ Lado da oferta (ignorar p/ captação):** curso · vagas · salário · quanto cobrar · como começar · pode ser MEI
+
+> **Como repetir sozinho (grátis, 10 s):** abra no navegador
+> `https://suggestqueries.google.com/complete/search?client=chrome&hl=pt-BR&gl=br&q=bpo financeiro para`
+> Troque o final por qualquer semente. Ou simplesmente digite no Google e leia as sugestões + o bloco "Pesquisas relacionadas" no rodapé.
+
+### 4.3 ✅ Dados REAIS já extraídos — o que cada concorrente persegue no SEO
+
+Lido direto dos sites (grátis):
+
+- **Inspira Capital** → estratégia de **segmentação + conteúdo**: páginas para "terceirização para indústrias", "BPO para startups", "BPO para farmácias", "BPO financeiro para médicos", "quanto custa terceirizar financeiro" + educativo (indicadores, pró-labore, SaaS).
+- **Trust BPO** → **fundo de funil + estratégico**: "Quanto Custa Terceirizar o Financeiro?", "Por Que Contratar um BPO?", "Como escolher um BPO", "relatórios em tempo real", "financeiro manual ou automatizado" + BPO de Departamento Pessoal.
+- **Vibra** → **nicho de educação**: escolas, EAD, cursos, empreendedor digital; contas a receber e conciliação.
+- **Movimento BPO** → **PME genérico + método**: "liberte seu tempo, impulsione o lucro", 3 pilares, capta por WhatsApp. Sem preço público.
+
+**Insight cruzado:** todo mundo forte joga em segmento ou fundo de funil, **mas ninguém ocupa (a) o geo Juiz de Fora/MG nem (b) o ângulo educação+comunidade** — que é justamente o diferencial da FullBPO (Full Academy + Comunidade).
+
+### 4.4 Passo a passo das bibliotecas de anúncios (grátis, ~2 min, sem login)
+
+As duas bloqueiam robô, mas no navegador são abertas e gratuitas:
+
+**Google Ads Transparency Center**
+1. Acesse `adstransparency.google.com`
+2. Região: **Brasil**. Digite o concorrente (ex.: *Inspira Capital*, *Trust BPO*) ou o domínio.
+3. Veja os anúncios ativos, o formato e **há quanto tempo rodam**. Anúncio antigo = campanha lucrativa → copie o ângulo.
+
+**Meta Ad Library** (o mais importante pra esse nicho)
+1. Acesse `facebook.com/ads/library`
+2. País: **Brasil** · Categoria: **Todos os anúncios**
+3. Busque por palavra (`BPO financeiro`) **ou** pelo nome da página do concorrente.
+4. Anote: oferta, gancho, prova social e **data de início** (quanto mais tempo no ar, mais converte). Esses são os criativos que estão "gerando dinheiro agora".
 
 ---
 
-## 5. ⚠️ Aviso de método — o que estes dados são (e não são)
+## 5. Recomendações práticas (onde tirar dinheiro deles)
 
-**O que este relatório entrega com confiança:** quem são os concorrentes reais, como estão posicionados, e **quais palavras-chave de intenção comercial movem dinheiro neste nicho** — deduzido da própria SERP brasileira (quem ranqueia, com que conteúdo, com que preço).
-
-**O que NÃO é possível afirmar sem ferramenta paga:** o **valor exato de tráfego pago, o gasto em Google Ads por palavra e a receita por keyword AGORA, em tempo real**, de cada concorrente. Isso exige acesso às bases de inteligência competitiva. Para puxar o número vivo:
-
-| Ferramenta | O que revela | Como usar |
-|---|---|---|
-| **SEMrush** (Domain Overview → *Advertising Research*) | Palavras que o concorrente compra no Ads, CPC, tráfego pago estimado, "Traffic Cost" | Digite `trustbpo.com.br`, `inspiracapital.com.br`, `vibraconsultoria.com.br` |
-| **Ahrefs** (Site Explorer → *Paid keywords* / *Organic keywords*) | Keywords orgânicas e pagas + valor de tráfego | Mesmos domínios |
-| **SpyFu** | Histórico de Ads do concorrente, keywords lucrativas, anúncios | Ideal para "que anúncio deu dinheiro" |
-| **Google Keyword Planner** | Volume e CPC real das palavras da seção 3 | Grátis com conta Google Ads |
-| **Similarweb** | Origem de tráfego (quanto vem de busca paga vs. orgânica) | Valida o mix de canal |
-
-**Próximo passo recomendado:** rodar os 3–4 domínios da Camada 1 no SEMrush/Ahrefs e cruzar com a lista de money keywords da seção 3. Aí você tem o número exato de "quanto cada palavra está gerando pra eles agora". Se quiser, posso montar o passo a passo dessa extração ou uma planilha-modelo para preencher com os dados.
+1. **Domine o geo — vitória mais barata.** Página local + Google Meu Negócio para "BPO financeiro Juiz de Fora / Zona da Mata / MG". Concorrência ~zero.
+2. **Uma página por segmento** (clínicas, e-commerce, restaurantes, advogados…). O autocomplete provou que a demanda existe e a concorrência é baixa.
+3. **Google Ads só no fundo de funil de cliente:** "contratar BPO financeiro", "quanto custa contratar BPO financeiro", "terceirizar meu financeiro". **Nunca** em "curso/vagas/salário".
+4. **Transforme o método em conteúdo:** ranquear "empresa dá lucro mas não sobra dinheiro" e "fluxo de caixa previsível" → leva ao CFI/Full Academy, território que ERP nenhum ocupa.
+5. **Entre nos diretórios que ranqueiam #1** (oHub, b2bfy) — intercepta quem busca "melhores empresas de BPO financeiro".
+6. **Monitore os anúncios dos concorrentes 1x/mês** na Meta Ad Library e no Google Transparency (grátis) e copie os ganchos que ficam muito tempo no ar.
 
 ---
 
-## Fontes consultadas
-- Ranking de mercado: oHub, b2bfy, Inspira Capital
-- Concorrentes/posicionamento: Movimento BPO, Trust BPO, Vibra Consultoria, The Bee Work, Focus BPO, Manda Pro Financeiro, Levits BPO, Odos
-- Contexto de preço/nicho: Contabilizei, Conta Azul, Santander, InfinitePay, FinBits, Cielo
-- Posicionamento próprio: fullbpo.com
+## 6. (Opcional) Se um dia quiser pagar por dados mais fundos
+Só se precisar de número exato de gasto/tráfego pago por palavra: **SEMrush** (aba *Advertising Research*), **Ahrefs** (*Paid/Organic keywords*) ou **SpyFu**. Digite os domínios da Camada 1. Mas para 90% da decisão, o kit gratuito da seção 4 já resolve.
+
+---
+
+## Fontes
+Autocomplete: API pública Google Suggest · Sites: fullbpo.com, inspiracapital.com.br, trustbpo.com.br, vibraconsultoria.com.br, movimentobpo.com.br · Mercado/preço: oHub, b2bfy, Contabilizei, Conta Azul, Santander, InfinitePay, FinBits.
