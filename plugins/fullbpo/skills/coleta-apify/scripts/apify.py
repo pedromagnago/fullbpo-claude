@@ -253,6 +253,10 @@ def main():
         inp = {"profiles": [handle], "resultsPerPage": _arg_n(30),
                "profileScrapeSections": ["videos"], "profileSorting": "latest"}
         items = run_actor(ACTOR_PERFIL, inp, _token())
+        raw = _opt_str("--save-raw")           # preserva o dataset CRU (base da análise profunda)
+        if raw:
+            json.dump(items, open(raw, "w"), ensure_ascii=False)
+            print(f"cru salvo: {raw} — {len(items)} itens")
         data = mapear_perfil(items)
         json.dump(data, open(saida, "w"), ensure_ascii=False, indent=2)
         print(f"perfil salvo: {saida} — @{data['handle']} · {data.get('seguidores')} seguidores · {data['amostra']} vídeos")

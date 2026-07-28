@@ -21,9 +21,11 @@ Script: `scripts/apify.py` (só stdlib; respeita `HTTPS_PROXY` e o CA do ambient
 **Perfil / conteúdo** (alimenta `estudo-de-video` e o benchmark de concorrentes):
 ```bash
 APIFY_TOKEN=... python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/apify.py" \
-  perfil "@frohethais" perfil_analise.json --n 30
+  perfil "@frohethais" perfil_analise.json --n 40 --save-raw perfil.raw.json
 ```
 Gera `perfil_analise.json` (mesmo esquema do `coletar_perfil.sh`, **+ `seguidores`, `nome`, `bio`, `verificado`, `curtidas_totais`**).
+
+> **Sempre passe `--save-raw`.** O `perfil_analise.json` é um **resumo** (~8 médias); o `--save-raw` preserva o **dataset cru** (dezenas de campos por vídeo: som/trilha, timestamp, duração, saves/shares individuais, legendas, menções, `ttSeller`…). É esse cru que alimenta a **análise profunda** abaixo. Sem ele, essa informação é perdida.
 
 **Produtos / TikTok Shop** (alimenta o Radar de Produtos e painéis estimados):
 ```bash
@@ -66,6 +68,31 @@ APIFY_TOKEN=... bash "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/avaliar.
   "@handle" --video "<URL opcional>" --nicho "<termo opcional>"
 ```
 `avaliar.sh` é **idempotente** (pula o que já coletou) e chama `montar_esqueleto.py`, que converte o `perfil_analise.json` num `conteudo.json` já preenchido com métricas/hashtags/top vídeos — sobra só o qualitativo (marcado como `TODO`) para o analista/Claude.
+
+## Análise profunda (não jogar o cru fora)
+
+O resumo (`perfil_analise.json`) colapsa tudo em médias — e **a média mente** quando há um viral isolado (ex.: média 570 vs mediana 90 views). A camada profunda extrai do **dataset cru** o que o resumo descarta:
+
+1. **Motor** — `scripts/analise_profunda.py` consome o(s) `*.raw.json` e produz um dossiê rico por perfil + benchmark do nicho:
+   ```bash
+   # 1 perfil:
+   python3 "${CLAUDE_PLUGIN_ROOT}/skills/coleta-apify/scripts/analise_profunda.py" perfil.raw.json analise.json
+   # nicho inteiro (cliente + concorrentes) num arquivo, com mediana do nicho:
+   python3 ".../analise_profunda.py" --nicho pri.raw.json conc1.raw.json ... -o nicho.json
+   ```
+   Extrai: **distribuição honesta** (mediana, p25/p75/p90, outliers, % abaixo de 1k, `média/mediana`), **áudio** (som original vs trend, quais rendem), **melhor dia/hora** (fuso BR, com amostra mínima p/ não seguir outlier), **duração × views** (sweet spot + correlação), **taxas** save/share/comment por vídeo, **tendência** no tempo, **hashtags** que performam, **colabs** (@menções), **seller?** (`ttSeller`), **correlações** e a **tabela de todos os vídeos** — além de um `diagnostico` em bullets prontos.
+
+2. **Ganchos** — `scripts/transcrever.py` puxa as legendas (WebVTT dos `subtitleLinks`) e extrai o **gancho (primeiros ~3s)** + texto de cada vídeo:
+   ```bash
+   python3 ".../transcrever.py" perfil.raw.json transcricoes.json [--top N]
+   ```
+   Cobertura depende da TikTok (só alguns vídeos têm legenda automática) — é best-effort. Para 1 vídeo a fundo (frame a frame + áudio), use a skill `assistir-video`/`estudo-de-video`.
+
+3. **Relatório** — `scripts/montar_analise.py` renderiza a análise profunda de 1 handle como HTML autocontido (SVG inline, tema FullBPO), usando o resto do nicho como **benchmark real** e os ganchos transcritos:
+   ```bash
+   python3 ".../montar_analise.py" nicho.json analise.html --handle pri.andrade50 --transc-dir .
+   ```
+   Vira a aba **Performance** da `central-creator`. Todos os três têm `autotest` (`analise_profunda.py autotest`).
 
 ## Como se liga no resto
 

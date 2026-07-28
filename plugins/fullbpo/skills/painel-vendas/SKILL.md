@@ -46,6 +46,20 @@ Pedidos como "monta o painel de vendas desse creator", "atualiza o dashboard do 
 - `tag` das apostas: `"Novo"` (verde) ou `"Acelerando"` (âmbar).
 - Campos/seções ausentes são omitidos no painel.
 
+### Modo "aguardando" (creator ainda sem vendas)
+
+Para um creator que **ainda não vende pelo Shop**, não invente número (nem use painel de exemplo de outra pessoa — isso confunde o cliente). Use o modo honesto: identidade dele + estrutura + o **potencial real do nicho**.
+
+```json
+{
+  "cliente": "Nome (Apelido)", "handle": "@handle", "mes": "Aguardando 1º relatório",
+  "aguardando": true,
+  "potencial": {"minha_mediana": 110, "mediana_nicho": 3492,
+                "obs": "Fechar a distância de alcance é o que destrava a venda no Shop."}
+}
+```
+Renderiza KPIs como "—", explica como o painel popula (passos do CSV) e mostra a barra **sua mediana vs. mediana do nicho** (dado real vindo do `analise_profunda.py`). Assim que houver o CSV do Affiliate Center, troque por um `vendas.json` normal. `passos` (lista) é opcional e sobrescreve os passos padrão.
+
 ## Contrato do adaptador (a construir por fonte)
 
 Um adaptador é um script que produz o `vendas.json` acima. Para adicionar um:

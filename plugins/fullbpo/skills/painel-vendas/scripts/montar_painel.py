@@ -88,6 +88,8 @@ def main():
         print("uso: montar_painel.py <vendas.json> [saida.html]", file=sys.stderr); sys.exit(2)
     d = json.load(open(sys.argv[1], encoding="utf-8"))
     out_path = sys.argv[2] if len(sys.argv) > 2 else "painel.html"
+    if d.get("aguardando"):                 # creator sem vendas ainda -> painel honesto (sem número inventado)
+        _render_aguardando(d, out_path); return
     k = d.get("kpis", {})
     meta = d.get("meta_gmv")
 
@@ -163,6 +165,61 @@ def main():
                     f'<ul class="apostas">{arows}</ul>', " wide")
 
     render(out_path, d, kpis, acum, ritmo, pareto, donut, forn_tbl, apostas)
+
+def _render_aguardando(d, out_path):
+    # Painel HONESTO p/ creator que ainda não vende pelo Shop: identidade + estrutura
+    # + POTENCIAL com dado REAL do nicho. Nada de GMV/venda inventado (o oposto do demo).
+    lbls = ["GMV no mês", "Comissão", "Itens vendidos", "Ticket médio", "GMV por dia", "% Inelegível"]
+    kpis = "".join(f'<div class="kpi"><div class="k-v" style="color:var(--muted)">—</div>'
+                   f'<div class="k-k">{esc(l)}</div></div>' for l in lbls)
+
+    passos = d.get("passos") or [
+        "TikTok Affiliate Center → Dados/Analytics → exportar o CSV do mês",
+        "Enviar o CSV pra FullBPO (ou salvar na pasta combinada)",
+        "O painel popula sozinho: GMV, comissão, Pareto de produtos e fornecedores a negociar",
+    ]
+    p1 = panel("Este painel já está pronto — falta só o seu 1º dado de vendas",
+               "popula com o CSV do Affiliate Center",
+               '<p style="margin:.1em 0 1em;color:var(--ink-soft)">Enquanto você não vende pelo Shop, a gente '
+               '<b>não inventa número</b>. Assim que chegar o 1º relatório do Affiliate Center, tudo aqui vira o seu real:</p>'
+               f'<ol style="margin:0;padding-left:1.2em;color:var(--ink-soft);line-height:1.9">'
+               f'{"".join(f"<li>{esc(p)}</li>" for p in passos)}</ol>', " wide")
+
+    pot = d.get("potencial") or {}
+    linhas = ""
+    if pot.get("minha_mediana") and pot.get("mediana_nicho"):
+        mine, nicho = pot["minha_mediana"], pot["mediana_nicho"]
+        mult = round(nicho / mine, 1) if mine else 0
+        bar = max(2, mine / nicho * 100)
+        linhas = (
+            f'<p style="margin:.1em 0 1em;color:var(--ink-soft)">O que separa você de vender no Shop hoje '
+            f'<b>não é preço nem produto — é alcance</b>. Comparando com dado real do seu nicho:</p>'
+            f'<div style="display:flex;flex-direction:column;gap:12px">'
+            f'<div><div class="k-k">Sua mediana de views/vídeo</div>'
+            f'<div style="height:14px;background:var(--teal);border-radius:3px;width:{bar:.1f}%;min-width:26px"></div>'
+            f'<div class="p-sub" style="text-align:left">{int(mine):,} views</div></div>'
+            f'<div><div class="k-k">Mediana do nicho (creators do mesmo tema)</div>'
+            f'<div style="height:14px;background:var(--ochre);border-radius:3px;width:100%"></div>'
+            f'<div class="p-sub" style="text-align:left">{int(nicho):,} views · você está <b>{mult}× atrás</b></div></div>'
+            f'</div>'.replace(",", "."))
+    if pot.get("obs"):
+        linhas += f'<p style="margin:1em 0 0;color:var(--ink-soft)">{esc(pot["obs"])}</p>'
+    p2 = panel("Seu potencial — com dado real do nicho", "não é promessa; é a distância a fechar",
+               linhas or '<p style="color:var(--muted)">Sem benchmark de nicho ainda.</p>', " wide")
+
+    glos = [("GMV", "o quanto você vendeu no mês (soma dos pedidos)"),
+            ("Comissão", "o que de fato entra pra você, por faixa de produto"),
+            ("Pareto", "os poucos produtos que fazem 80% da comissão — onde focar"),
+            ("Fornecedores", "quais dá pra negociar comissão maior (padrão vs. ads)"),
+            ("% Inelegível", "vendas que não contam comissão — pra você cortar")]
+    p3 = panel("O que cada número vai te mostrar", "",
+               '<ul class="legend">' + "".join(
+                   f'<li><span class="dot" style="background:var(--teal)"></span>{esc(t)}'
+                   f'<span class="leg-v" style="color:var(--ink-soft)">{esc(v)}</span></li>' for t, v in glos)
+               + '</ul>', " wide")
+
+    render(out_path, d, kpis, p1, p2, p3, "", "", "")
+
 
 def render(out_path, d, kpis, acum, ritmo, pareto, donut, forn_tbl, apostas):
     titulo = f'Painel de Vendas — {d.get("handle") or d.get("cliente","")}'.strip(" —")
