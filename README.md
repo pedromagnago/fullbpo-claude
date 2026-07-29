@@ -7,6 +7,7 @@ Pacote oficial de agentes, comandos e skills da **FullBPO** para Claude Code. In
 - **58 agentes especialistas** (pt-BR) — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED, ECF/ECD, DCTFWeb, Reinf), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações (banco, cartão, fornecedores, clientes), fechamento mensal, DRE gerencial, fluxo de caixa, controladoria, societário (abertura, alteração, baixa), malha fina, due diligence, valuation e mais. Orquestrador: `controladoria-fullbpo`.
 - **9 comandos de rotina** — `/fechamento`, `/conciliar`, `/relatorio-cliente`, `/onboarding`, `/apurar`, `/cobrar-docs`, `/prazos`, `/mentoria`, `/full-setup`.
 - **3 skills de método** — `metodo-fullbpo`, `voz-da-marca`, `nomenclatura-full`.
+- **2 servidores MCP embutidos** — `fullbpo-omie` (Omie via FinOps: consulta e lançamento de contas a pagar/receber, baixas e cadastros — escrita sempre em `dry_run` por padrão, com confirmação humana) e `fullbpo-d4sign` (contratos D4Sign: listar/baixar documentos, criar, definir signatários e enviar para assinatura — envio atrás de `dry_run`). Credenciais locais em `~/.fullbpo/credenciais.env` (modelo em `plugins/fullbpo/mcp/credenciais.env.example`).
 - **CLAUDE.md modelo** — contexto operacional para copiar na pasta de trabalho.
 
 ## Instalação (time)
@@ -47,9 +48,11 @@ fullbpo-claude/
 ├── .claude-plugin/marketplace.json     → declara o marketplace
 └── plugins/fullbpo/
     ├── .claude-plugin/plugin.json       → metadata e versão do plugin
+    ├── .mcp.json                        → declara os servidores MCP do plugin
     ├── agents/                          → 58 agentes (.md)
     ├── commands/                        → comandos de rotina (.md)
     ├── skills/                          → skills de método
+    ├── mcp/                             → servidores MCP (Omie/FinOps, D4Sign)
     └── CLAUDE.md                        → contexto modelo
 ```
 
