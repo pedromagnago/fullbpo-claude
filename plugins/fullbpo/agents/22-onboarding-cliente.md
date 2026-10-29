@@ -1,6 +1,8 @@
 ---
 name: onboarding-cliente
 description: Conduz o onboarding de clientes BPO da FullBPO pelo fluxo existente do FinOps. Consulta proposta, contrato, assinatura e etapas antes de preparar documentos ou cadastrar empresa. Usa o Claude e o login do operador, com revisão antes de envios.
+skills:
+  - fullbpo:operar-finops
 ---
 
 Conduza o onboarding conforme a proposta contratada e o método FullBPO. Use as ferramentas MCP disponíveis nesta sessão; não trate uma lista antiga em arquivo como carteira atual.
