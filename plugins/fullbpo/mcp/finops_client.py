@@ -56,6 +56,10 @@ def _load_session() -> dict | None:
     try:
         with open(config.FINOPS_SESSION_FILE, encoding="utf-8") as f:
             _session = json.load(f)
+        # Uma troca de login local nunca reutiliza a sessão de outra pessoa.
+        email = (_session.get('user') or {}).get('email', '')
+        if config.FINOPS_EMAIL and email.casefold() != config.FINOPS_EMAIL.casefold():
+            _session = None
     except (FileNotFoundError, json.JSONDecodeError):
         _session = None
     return _session
@@ -127,14 +131,12 @@ def _access_token(force_refresh: bool = False) -> str:
 
 
 # ─── Bridge p/ a Edge Function ───────────────────────────────────────────────
-def call_tool(tool: str, params: dict | None = None) -> dict:
-    """Chama uma tool do mcp-server do FinOps com o JWT do operador.
+def request(body: dict) -> dict:
+    """POST autenticado. Preserva pending, token, source e o recibo de execução.
 
-    Faz 1 retry com refresh/relogin se o 1º POST voltar 401 (token expirado).
-    Devolve o `data` da tool; levanta FinOpsToolError em erro de tool/HTTP.
+    Só repete após 401, nunca após timeout/5xx de escrita com resultado desconhecido.
     """
     url = f"{config.FINOPS_URL.rstrip('/')}{_MCP_PATH}"
-    body = {"tool": tool, "params": params or {}}
 
     def _do(token: str) -> httpx.Response:
         with httpx.Client(timeout=120) as c:
@@ -150,36 +152,40 @@ def call_tool(tool: str, params: dict | None = None) -> dict:
 
     if r.status_code != 200:
         raise FinOpsToolError(
-            f"FinOps recusou '{tool}': HTTP {r.status_code} {r.text[:300]}")
+            f"FinOps recusou a chamada: HTTP {r.status_code} {r.text[:300]}")
     payload = r.json()
     if not payload.get("success", False):
-        raise FinOpsToolError(f"Tool '{tool}' falhou: {payload.get('error') or payload}")
-    return payload.get("data")
+        raise FinOpsToolError(f"FinOps: {payload.get('error') or payload}")
+    return payload
+
+
+def call_tool(tool: str, params: dict | None = None) -> dict:
+    """Compatibilidade dos atalhos Omie, sem perder uma pendência de aprovação."""
+    payload = request({"tool": tool, "params": params or {}})
+    return payload if payload.get('pending') or 'data' not in payload else payload['data']
+
+
+def catalogo() -> list[dict]:
+    return request({'op': 'listar_tools'})['tools']
 
 
 # ─── Mapa local nome→company_id (carteira do operador) ───────────────────────
 def empresas() -> list[dict]:
-    """Lista {nome, company_id} a partir de FINOPS_EMPRESAS_FILE (json local).
-
-    O servidor não expõe a carteira; este mapa é o atalho amigável p/ chamar as
-    tools por NOME em vez de decorar UUID. Aceita 2 formatos no arquivo:
-      {"Cliente A": "uuid", ...}                  (dict simples)
-      [{"nome": "...", "company_id": "..."}]      (lista de objetos)
-    """
-    try:
-        with open(config.FINOPS_EMPRESAS_FILE, encoding="utf-8") as f:
-            raw = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-    if isinstance(raw, dict):
-        return [{"nome": k, "company_id": v} for k, v in raw.items()]
-    if isinstance(raw, list):
-        return [
-            {"nome": e.get("nome") or e.get("name"),
-             "company_id": e.get("company_id") or e.get("id")}
-            for e in raw if isinstance(e, dict)
-        ]
-    return []
+    """Carteira atual e autorizada do servidor. Não cai no arquivo antigo em erro."""
+    result = []
+    offset = 0
+    for _ in range(1000):
+        page = call_tool('listar_empresas', {'offset': offset, 'limit': 100})
+        if not isinstance(page, dict) or not isinstance(page.get('empresas'), list):
+            raise FinOpsToolError('Resposta de carteira inválida; não use o mapa local como confirmação.')
+        result.extend(page['empresas'])
+        following = page.get('next_offset')
+        if following is None:
+            return result
+        if not isinstance(following, int) or following <= offset:
+            raise FinOpsToolError('Paginação de carteira inválida; consulta incompleta.')
+        offset = following
+    raise FinOpsToolError('Carteira excedeu o limite de páginas; consulta incompleta.')
 
 
 def resolver_company_id(nome_ou_id: str) -> str:
@@ -195,14 +201,14 @@ def resolver_company_id(nome_ou_id: str) -> str:
         return s
     lista = empresas()
     alvo = s.lower()
-    exatos = [e for e in lista if (e["nome"] or "").lower() == alvo]
-    if exatos:
+    exatos = [e for e in lista if alvo in [(e.get(k) or '').lower() for k in ('nome', 'nome_fantasia')]]
+    if len(exatos) == 1:
         return exatos[0]["company_id"]
-    parciais = [e for e in lista if alvo in (e["nome"] or "").lower()]
+    parciais = exatos or [e for e in lista if any(alvo in (e.get(k) or '').lower() for k in ('nome', 'nome_fantasia'))]
     if not parciais:
         raise FinOpsToolError(
-            f"Cliente {s!r} não encontrado em finops_empresas.json. "
-            f"Use finops_empresas() p/ ver a lista, ou passe o company_id (UUID).")
+            f"Cliente {s!r} não encontrado na carteira atual deste login. "
+            f"Confira nome/razão social e comercial_onboarding; ausência na carteira não prova que não há proposta ou contrato.")
     if len(parciais) > 1:
         nomes = ", ".join(m["nome"] for m in parciais)
         raise FinOpsToolError(

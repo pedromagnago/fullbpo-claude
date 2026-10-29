@@ -28,8 +28,11 @@ mcp = FastMCP("fullbpo-d4sign")
 # ─── Leitura ─────────────────────────────────────────────────────────────────
 @mcp.tool()
 def d4sign_status() -> dict:
-    """Sanidade da conexão D4Sign (credencial + amostra de cofres). Rode primeiro."""
-    return d4sign.status()
+    """Estado do conector D4Sign LOCAL. Para contratos do FinOps use finops_onboarding: a conexão do servidor é independente e não exige estas credenciais locais."""
+    result = d4sign.status()
+    result['escopo'] = 'conector_d4sign_local'
+    result['contratos_finops'] = 'Use finops_onboarding para consultar a integração e os contratos do FinOps, mesmo sem credenciais locais.'
+    return result
 
 
 @mcp.tool()

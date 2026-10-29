@@ -34,8 +34,10 @@ import config
 import finops_client
 import omie
 import omie_write
+import finops_tools
 
 mcp = FastMCP("fullbpo-omie")
+finops_tools.register(mcp)
 
 
 # ─── FinOps (engine Omie multi-tenant na nuvem) ──────────────────────────────
@@ -43,7 +45,7 @@ mcp = FastMCP("fullbpo-omie")
 # autenticado com o JWT do operador. Escopo por carteira é validado no servidor.
 @mcp.tool()
 def finops_empresas() -> list[dict]:
-    """Carteira de clientes Omie disponíveis (nome → company_id), do mapa local.
+    """Carteira atual do login no FinOps (nome → company_id), inclusive sem Omie.
     Use ISTO primeiro p/ descobrir o nome/cliente a passar nas tools omie_*."""
     return finops_client.empresas()
 
@@ -122,7 +124,7 @@ def omie_listar_clientes_fornecedores(cliente: str, apenas_cliente: bool = False
 
 @mcp.tool()
 def omie_sync_company(cliente: str, desde: str | None = None,
-                      dry_run: bool = False, full_sync: bool = False) -> dict:
+                      dry_run: bool = True, full_sync: bool = False) -> dict:
     """Espelha (sincroniza) os dados do Omie do cliente na base do FinOps. Use
     dry_run=True p/ simular antes. desde=yyyy-MM-dd recorta o período."""
     return omie.sync_company(cliente, desde=desde, dry_run=dry_run, full_sync=full_sync)
@@ -310,15 +312,23 @@ def _selftest() -> int:
         for p in pend:
             print(f"  - {p}")
 
-    lista = finops_client.empresas()
-    print(f"\nempresas() no mapa   : {len(lista)}")
+    try:
+        lista = finops_client.empresas()
+        catalogo = finops_client.catalogo()
+    except (finops_client.FinOpsAuthError, finops_client.FinOpsToolError) as exc:
+        print(f'Falha ao conferir o acesso: {exc}')
+        return 1
+    print(f"\nempresas() no FinOps   : {len(lista)}")
     for e in lista[:5]:
         print(f"  · {e['nome']} → {e['company_id']}")
     if len(lista) > 5:
         print(f"  … (+{len(lista) - 5})")
 
-    ok = bool(lista)
-    print(f"\nresultado: {'OK' if ok else 'FALHOU (mapa de empresas vazio)'}")
+    nomes = {t['name'] for t in catalogo}
+    faltam = {'listar_empresas', 'manage_tarefas', 'comercial_onboarding'} - nomes
+    print(f'Ferramentas no servidor: {len(nomes)}; ausentes nesta versão: {sorted(faltam)}')
+    ok = bool(lista) and not faltam
+    print(f"\nresultado: {'OK' if ok else 'FALHOU (carteira vazia ou inacessível)'}")
     return 0 if ok else 1
 
 
