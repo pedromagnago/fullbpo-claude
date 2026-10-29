@@ -1,7 +1,7 @@
 {
   "name": "fullbpo",
   "description": "Método FullBPO e operação pelo próprio Claude do time: carteira atual, catálogo completo do FinOps, tarefas do quadro, CRM, onboarding e Omie. Login individual, prévias e aprovação humana para ações sensíveis.",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": {
     "name": "Pedro Magnago — FullBPO",
     "email": "pedro.magnago@fullbpo.com"

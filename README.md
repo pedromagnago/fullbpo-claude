@@ -33,8 +33,9 @@ Pronto. Teste com `/prazos 06/2026`.
 
 ## Atualização
 
-Na versão **1.4.0**, o MCP `fullbpo-omie` também opera o FinOps:
+Na versão **1.4.1**, o MCP `fullbpo-omie` também opera o FinOps:
 
+- Os 58 agentes herdam as ferramentas disponíveis na sessão e carregam a orientação `operar-finops`, respeitando as permissões do login.
 - `finops_empresas`: carteira atual do login, consultada no servidor.
 - `finops_ferramentas` e `finops_executar`: catálogo completo e execução com permissões individuais.
 - `finops_tarefas`: consulta, criação, atualização e checklist no quadro, sem acionar outra IA.
