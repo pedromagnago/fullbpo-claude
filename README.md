@@ -33,11 +33,23 @@ Pronto. Teste com `/prazos 06/2026`.
 
 ## Atualização
 
+Na versão **1.4.0**, o MCP `fullbpo-omie` também opera o FinOps:
+
+- `finops_empresas`: carteira atual do login, consultada no servidor.
+- `finops_ferramentas` e `finops_executar`: catálogo completo e execução com permissões individuais.
+- `finops_tarefas`: consulta, criação, atualização e checklist no quadro, sem acionar outra IA.
+- `finops_onboarding`: propostas, contratos e etapas; aproveita a D4Sign configurada no FinOps.
+- `finops_decidir_pendencia`: leva ao servidor a decisão explícita da pessoa sobre uma pendência.
+
+O Claude faz a análise na conta de quem está trabalhando. O FinOps guarda os registros, aplica as permissões e mantém a auditoria. A versão requer as ferramentas `listar_empresas`, `manage_tarefas` e `comercial_onboarding` publicadas no backend. O arquivo `finops_empresas.json` antigo deixa de ser a fonte da carteira.
+
 Quando sair uma versão nova:
 ```
 /plugin marketplace update fullbpo
 /plugin update fullbpo@fullbpo
 ```
+
+Reinicie a sessão do Claude e rode `/full-setup`. Valide primeiro leitura e prévia. Para escrita, use uma tarefa de teste identificada, não um lançamento financeiro ou envio ao cliente.
 
 ## Manutenção (Pedro / responsável)
 

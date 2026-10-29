@@ -99,7 +99,7 @@ def listar_clientes_fornecedores(cliente: str, apenas_cliente: bool = False,
 
 
 def sync_company(cliente: str, desde: str | None = None,
-                 dry_run: bool = False, full_sync: bool = False) -> dict:
+                 dry_run: bool = True, full_sync: bool = False) -> dict:
     """Espelha os dados do Omie do cliente na base do FinOps (sync).
 
     dry_run=True só simula (não grava). desde=yyyy-MM-dd limita o recorte;
