@@ -43,13 +43,13 @@ Na versão **1.4.0**, o MCP `fullbpo-omie` também opera o FinOps:
 
 O Claude faz a análise na conta de quem está trabalhando. O FinOps guarda os registros, aplica as permissões e mantém a auditoria. A versão requer as ferramentas `listar_empresas`, `manage_tarefas` e `comercial_onboarding` publicadas no backend. O arquivo `finops_empresas.json` antigo deixa de ser a fonte da carteira.
 
-Quando sair uma versão nova:
-```
-/plugin marketplace update fullbpo
-/plugin update fullbpo@fullbpo
+Quando sair uma versão nova, execute no terminal:
+```sh
+claude plugin marketplace update fullbpo
+claude plugin update fullbpo@fullbpo
 ```
 
-Reinicie a sessão do Claude e rode `/full-setup`. Valide primeiro leitura e prévia. Para escrita, use uma tarefa de teste identificada, não um lançamento financeiro ou envio ao cliente.
+Na interface do Claude Code, a alternativa é abrir `/plugin`, entrar em **Installed**, selecionar **FullBPO** e escolher **Update now**. Reinicie a sessão do Claude e rode `/full-setup`. Valide primeiro leitura e prévia. Para escrita, use uma tarefa de teste identificada, não um lançamento financeiro ou envio ao cliente.
 
 ## Manutenção (Pedro / responsável)
 
@@ -69,6 +69,6 @@ Para publicar uma melhoria:
 1. Edite o agente/comando/skill.
 2. Suba a `version` em `plugins/fullbpo/.claude-plugin/plugin.json`.
 3. `git commit` + `git push`.
-4. O time roda `/plugin update` e recebe a mudança.
+4. O time atualiza o plugin pelo terminal ou pelo painel, conforme as instruções acima.
 
 Atalho: editou um agente direto em `~/.claude/agents/`? Copie de volta para `plugins/fullbpo/agents/` antes do commit, para manter o repositório como fonte da verdade.
