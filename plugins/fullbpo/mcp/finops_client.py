@@ -45,7 +45,11 @@ class FinOpsAuthError(RuntimeError):
 
 
 class FinOpsToolError(RuntimeError):
-    """A Edge Function recusou a chamada ou a tool devolveu erro."""
+    """Falha estruturada, sem descartar a causa nem induzir repetição de escrita."""
+    def __init__(self, message: str, details: dict | None = None):
+        super().__init__(message)
+        self.details = details or {'error': message, 'estado': 'falha', 'proximo_passo': 'Confira a mensagem e consulte o contexto; não presuma falta de ferramenta.'}
+
 
 
 # ─── Sessão em disco (refresh token = sensível, chmod 600) ───────────────────
@@ -146,13 +150,33 @@ def request(body: dict) -> dict:
                 "Content-Type": "application/json",
             })
 
-    r = _do(_access_token())
-    if r.status_code == 401:
-        r = _do(_access_token(force_refresh=True))
+    try:
+        r = _do(_access_token())
+        if r.status_code == 401:
+            r = _do(_access_token(force_refresh=True))
+    except httpx.TransportError as error:
+        raise FinOpsToolError('Conexão interrompida; resultado não confirmado.', {
+            'error': 'transport_error', 'estado': 'resultado_desconhecido',
+            'proximo_passo': 'Não repita escrita. Consulte o registro para saber se a operação ocorreu. Para consulta de leitura, tente novamente.',
+        }) from error
 
     if r.status_code != 200:
-        raise FinOpsToolError(
-            f"FinOps recusou a chamada: HTTP {r.status_code} {r.text[:300]}")
+        try:
+            problem = r.json()
+        except ValueError:
+            problem = {}
+        if not isinstance(problem, dict):
+            problem = {}
+        code = problem.get('error', 'http_error')
+        next_step = {
+            401: 'Sessão inválida. Confira o login individual no setup; não peça senha no chat.',
+            403: 'Acesso negado. Consulte finops_contexto e confira empresa, ação e papel. Isso não significa ausência da ferramenta. Implantação operacional usa finops_implantacao.',
+            400: 'Confira os parâmetros, a versão e as inconsistências retornadas; consulte novamente antes de alterar.',
+            429: 'Limite temporário de chamadas; aguarde antes de nova consulta.',
+        }.get(r.status_code, 'Consulte o estado do registro antes de repetir uma escrita; encaminhe o request_id ao suporte.')
+        details = {k: problem[k] for k in ('error', 'request_id', 'dica', 'campo', 'schema', 'exemplo_de_chamada') if k in problem}
+        details.update({'http_status': r.status_code, 'estado': 'resultado_desconhecido' if r.status_code >= 500 else 'recusado', 'proximo_passo': next_step})
+        raise FinOpsToolError(f'FinOps: HTTP {r.status_code} {code}', details)
     payload = r.json()
     if not payload.get("success", False):
         raise FinOpsToolError(f"FinOps: {payload.get('error') or payload}")

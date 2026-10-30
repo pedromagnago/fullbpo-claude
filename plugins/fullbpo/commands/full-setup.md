@@ -3,7 +3,7 @@ description: Guia de configuração inicial do Claude para um novo membro do tim
 ---
 Você está configurando o Claude para um novo membro do time FullBPO. Conduza o setup em passos claros, em pt-BR, sem jargão:
 
-Primeiro valide o FinOps: `finops_empresas` deve consultar a carteira do servidor; `finops_ferramentas` deve mostrar `manage_tarefas` e `comercial_onboarding`. O MCP `fullbpo-omie` usa o login individual do FinOps guardado localmente em `~/.fullbpo/credenciais.env`. Não peça senha no chat nem copie o login de Pedro. Se a identidade estiver errada, a pessoa deve corrigir o arquivo local em seu computador. Nunca imprima senha, access token ou refresh token.
+Primeiro chame `finops_contexto` e confira a identidade e as versões. O plugin 1.5.0 inclui `finops_mapa` e `finops_implantacao`. Consulte o mapa para explicar telas e limites. Depois valide o FinOps: `finops_empresas` deve consultar a carteira do servidor; `finops_ferramentas` deve mostrar `manage_tarefas` e `comercial_onboarding`. O MCP `fullbpo-omie` usa o login individual do FinOps guardado localmente em `~/.fullbpo/credenciais.env`. Não peça senha no chat nem copie o login de Pedro. Se a identidade estiver errada, a pessoa deve corrigir o arquivo local em seu computador. Nunca imprima senha, access token ou refresh token.
 
 Se essas ferramentas não aparecerem, atualize o marketplace e o plugin FullBPO e reinicie a sessão. Não edite a cópia em cache. A D4Sign local é um conector separado: para contratos do FinOps, use `finops_onboarding`, que aproveita a conexão do servidor.
 
