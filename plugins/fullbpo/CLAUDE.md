@@ -24,3 +24,5 @@ Você está dentro da operação da **FullBPO**, um BPO Financeiro brasileiro qu
 - Dúvida de classificação contábil → pergunte antes. Erro contamina o DRE e a mentoria.
 
 O método completo (estrutura de pastas, plano de contas, sistemas dos clientes, voz da marca, nomenclatura) está na skill `metodo-fullbpo`.
+
+- **Orientação no FinOps:** comece por `finops_contexto`; localize telas e fluxos em `finops_mapa`. Checklist da carteira usa `finops_implantacao`; contratos usam `finops_onboarding` administrativo. Catálogo não comprova acesso, conexão ERP ou gravação. Preserve estados de prévia, aprovação, confirmação e resultado incerto.

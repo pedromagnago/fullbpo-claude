@@ -33,16 +33,19 @@ Pronto. Teste com `/prazos 06/2026`.
 
 ## Atualização
 
-Na versão **1.4.1**, o MCP `fullbpo-omie` também opera o FinOps:
+Na versão **1.5.0**, o MCP `fullbpo-omie` também opera o FinOps:
 
 - Os 58 agentes herdam as ferramentas disponíveis na sessão e carregam a orientação `operar-finops`, respeitando as permissões do login.
+- `finops_contexto`: login, escopo, versões e limitações.
+- `finops_mapa`: caminhos de tela, cobertura do MCP e orientação por objetivo.
+- `finops_implantacao`: checklist operacional da carteira, com prévia, versão, alerta de duplicidade e leitura posterior.
 - `finops_empresas`: carteira atual do login, consultada no servidor.
 - `finops_ferramentas` e `finops_executar`: catálogo completo e execução com permissões individuais.
 - `finops_tarefas`: consulta, criação, atualização e checklist no quadro, sem acionar outra IA.
-- `finops_onboarding`: propostas, contratos e etapas; aproveita a D4Sign configurada no FinOps.
+- `finops_onboarding`: consulta administrativa de propostas, contratos e etapas; aproveita a D4Sign configurada no FinOps.
 - `finops_decidir_pendencia`: leva ao servidor a decisão explícita da pessoa sobre uma pendência.
 
-O Claude faz a análise na conta de quem está trabalhando. O FinOps guarda os registros, aplica as permissões e mantém a auditoria. A versão requer as ferramentas `listar_empresas`, `manage_tarefas` e `comercial_onboarding` publicadas no backend. O arquivo `finops_empresas.json` antigo deixa de ser a fonte da carteira.
+O Claude faz a análise na conta de quem está trabalhando. O FinOps guarda os registros, aplica as permissões e mantém a auditoria. A versão requer as ferramentas `listar_empresas`, `manage_tarefas`, `comercial_onboarding`, `finops_contexto`, `finops_mapa` e `manage_implantacao` publicadas no backend. O arquivo `finops_empresas.json` antigo deixa de ser a fonte da carteira.
 
 Quando sair uma versão nova, execute no terminal:
 ```sh

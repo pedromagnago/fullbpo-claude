@@ -95,4 +95,59 @@ class ToolsTests(unittest.TestCase):
             ft.decidir('token', False, True)
             send.assert_called_once_with({'op': 'rejeitar_pendencia', 'token': 'token'})
 
+
+class DiscoveryTests(unittest.TestCase):
+    def test_context_contains_installed_version(self):
+        with patch.object(ft, 'executar', return_value={'success': True, 'data': {'usuario_id': 'u'}}):
+            r = ft.contexto()
+            self.assertEqual(r['plugin']['versao'], '1.5.0')
+            self.assertEqual(r['data']['usuario_id'], 'u')
+
+    def test_structured_permission_error_preserved(self):
+        details = {'http_status': 403, 'estado': 'recusado', 'request_id': 'trace', 'proximo_passo': 'Confira o acesso'}
+        with patch.object(fc, 'catalogo', return_value=ToolsTests.catalog), patch.object(fc, 'request', side_effect=fc.FinOpsToolError('negado', details)):
+            r = ft.executar('manage_tarefas', {})
+            self.assertFalse(r['success'])
+            self.assertEqual(r['request_id'], 'trace')
+            self.assertEqual(r['http_status'], 403)
+
+    def test_registered_map_and_implantation_call_correct_server_tools(self):
+        class Registry:
+            functions = {}
+            def tool(self):
+                def register(fn):
+                    self.functions[fn.__name__] = fn
+                    return fn
+                return register
+        registry = Registry()
+        ft.register(registry)
+        with patch.object(ft, 'executar', return_value={'success': True}) as execute:
+            registry.functions['finops_mapa']('onboarding', 'CSSA')
+            execute.assert_called_once_with('finops_mapa', {'busca': 'onboarding'}, 'CSSA')
+        with patch.object(ft, 'executar', return_value={'success': True}) as execute:
+            registry.functions['finops_implantacao']('CSSA')
+            execute.assert_called_once_with('manage_implantacao', {'action': 'consultar'}, 'CSSA')
+
+    def test_timeout_never_retries_write(self):
+        import httpx
+        client = unittest.mock.MagicMock()
+        client.__enter__.return_value = client
+        client.post.side_effect = httpx.ReadTimeout('timeout')
+        with patch.object(fc, '_access_token', return_value='test-token'), patch.object(httpx, 'Client', return_value=client):
+            with self.assertRaises(fc.FinOpsToolError) as raised:
+                fc.request({'tool': 'manage_implantacao', 'params': {'dry_run': False}})
+            self.assertEqual(raised.exception.details['estado'], 'resultado_desconhecido')
+            self.assertEqual(client.post.call_count, 1)
+
+    def test_http_403_returns_guidance_not_tool_missing(self):
+        import httpx
+        client = unittest.mock.MagicMock()
+        client.__enter__.return_value = client
+        client.post.return_value = httpx.Response(403, json={'error': 'forbidden_admin_only', 'request_id': 'trace'})
+        with patch.object(fc, '_access_token', return_value='test-token'), patch.object(httpx, 'Client', return_value=client):
+            with self.assertRaises(fc.FinOpsToolError) as raised:
+                fc.request({'tool': 'comercial_onboarding', 'params': {'action': 'consultar'}})
+            self.assertEqual(raised.exception.details['http_status'], 403)
+            self.assertIn('finops_implantacao', raised.exception.details['proximo_passo'])
+
 if __name__ == '__main__': unittest.main()
