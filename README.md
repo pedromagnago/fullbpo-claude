@@ -2,6 +2,10 @@
 
 Pacote oficial de agentes, comandos e skills da **FullBPO** para Claude Code. Institucionaliza o método da operação: todo mundo do time usa as mesmas ferramentas, na mesma versão, atualizadas de um lugar só.
 
+## Planejamento: instalação guiada do FinOps
+
+O [plano de instalação e primeiro acesso](docs/planos/onboarding-finops.md) define as perguntas iniciais, o bloco para copiar no agente de código e o instalador distribuído pelo GitHub. **Essa instalação nova ainda não está disponível**; o documento contém a proposta, as etapas de implementação e os critérios de teste.
+
 ## O que vem dentro
 
 - **58 agentes especialistas** (pt-BR) — fiscal (Simples, ICMS/ISS, PIS/COFINS, IRPJ/CSLL, IPI, SPED, ECF/ECD, DCTFWeb, Reinf), folha/DP (eSocial, holerite, férias/13º, rescisão, INSS/FGTS, admissão), conciliações (banco, cartão, fornecedores, clientes), fechamento mensal, DRE gerencial, fluxo de caixa, controladoria, societário (abertura, alteração, baixa), malha fina, due diligence, valuation e mais. Orquestrador: `controladoria-fullbpo`.
