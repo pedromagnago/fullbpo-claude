@@ -163,6 +163,9 @@ def export_api(profile: str, output: Path):
 
 
 def gui():
+    if os.name == 'nt':
+        import ctypes
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     import secrets
     import threading
