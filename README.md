@@ -1,3 +1,5 @@
+> **Cliente que quer conectar o Claude Code ou seu sistema?** Use o [FinOps Connect](installer/README.md): instalador, autorização no FinOps e [API de leitura](installer/API.md). O procedimento de plugin abaixo continua destinado à equipe interna.
+
 # FullBPO — Plugin Claude Code
 
 Pacote oficial de agentes, comandos e skills da **FullBPO** para Claude Code. Institucionaliza o método da operação: todo mundo do time usa as mesmas ferramentas, na mesma versão, atualizadas de um lugar só.

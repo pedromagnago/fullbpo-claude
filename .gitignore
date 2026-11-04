@@ -10,3 +10,10 @@ __pycache__/
 # Identidade/sessão do operador nunca entram no repo (vivem em ~/.fullbpo)
 credenciais.env
 .finops_session.json
+
+# Installer runtime and packages
+installer/.venv/
+installer/__pycache__/
+build/
+dist/
+*.spec
