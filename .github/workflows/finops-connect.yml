@@ -1,0 +1,68 @@
+name: FinOps Connect
+on:
+  workflow_dispatch:
+  push:
+    tags: ['connect-v*']
+    branches: ['codex/instalador-finops']
+    paths: ['installer/**', '.github/workflows/finops-connect.yml']
+  pull_request:
+    paths: ['installer/**', '.github/workflows/finops-connect.yml']
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: FinOpsConnect-Windows-x64
+            exe: .exe
+          - os: macos-14
+            asset: FinOpsConnect-macOS-arm64
+            exe: ''
+          - os: macos-15-intel
+            asset: FinOpsConnect-macOS-x64
+            exe: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --project installer --frozen --group build --python python
+      - run: uv run --project installer --frozen python -m unittest discover -s installer -p 'test_*.py'
+      - run: uv run --project installer --frozen --group build pyinstaller --clean --onefile --name FinOpsConnect --collect-all keyring --collect-submodules mcp.server.fastmcp --collect-data mcp --add-data "installer/ui.html:." installer/finops_connect.py
+      - run: ./dist/FinOpsConnect${{ matrix.exe }} version
+      - name: Package with checksum
+        shell: python
+        run: |
+          import hashlib, pathlib, zipfile
+          exe = pathlib.Path('dist/FinOpsConnect${{ matrix.exe }}')
+          archive = pathlib.Path('${{ matrix.asset }}.zip')
+          with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
+              z.write(exe, exe.name)
+          pathlib.Path(str(archive)+'.sha256').write_text(hashlib.sha256(archive.read_bytes()).hexdigest()+'  '+archive.name+'\n')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: |
+            ${{ matrix.asset }}.zip
+            ${{ matrix.asset }}.zip.sha256
+  release:
+    if: startsWith(github.ref, 'refs/tags/connect-v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: assets
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" assets/* --prerelease --title "FinOps Connect $TAG" --notes "Piloto de consultas financeiras. Instruções e código em installer/README.md."
